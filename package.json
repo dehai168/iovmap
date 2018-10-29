@@ -4,6 +4,7 @@
   "description": "a map sdk base on leaflet",
   "main": "index.js",
   "scripts": {
+    "build": "node build/build.js",
     "test": "npm run test"
   },
   "repository": {
@@ -21,5 +22,11 @@
   "bugs": {
     "url": "https://github.com/dehai168/HMap/issues"
   },
-  "homepage": "https://github.com/dehai168/HMap#readme"
+  "homepage": "https://github.com/dehai168/HMap#readme",
+  "devDependencies": {
+    "babel-core": "^6.26.3",
+    "babel-loader": "^7.1.5",
+    "babel-preset-latest": "^6.24.1",
+    "webpack": "^4.23.1"
+  }
 }
