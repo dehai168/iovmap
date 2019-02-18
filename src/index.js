@@ -1,6 +1,10 @@
-import {Map} from './map/index'
+import { Map } from './map/index'
 import { Marker } from "./marker/index";
-export {
+
+const HMap = {
     Map,
     Marker
+};
+export {
+    HMap
 };

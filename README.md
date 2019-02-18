@@ -5,7 +5,7 @@ Based on leaflet development, a multi-map adaptation SDK facilitates the develop
 ## 技术栈
    es6
 ## 架构
-    
+   dom+tilelayer+es6
 ## 安装
    npm install
 ## 编译
@@ -15,7 +15,7 @@ Based on leaflet development, a multi-map adaptation SDK facilitates the develop
 ## 测试
    npm run test
 ## Demo
-    [查看Demo](https://dehai.site/HMap/docs/demo.html)
+    [Demo](https://github.com/dehai168/HMap/blob/master/demo/index.html)
 ## 文档
-    [API](https://dehai.site/HMap/docs/api.md)
+    [API](https://github.com/dehai168/HMap/blob/master/docs/api.md)
 ## 其他

@@ -14,7 +14,13 @@ module.exports = {
             test: /\.js$/,
             exclude: /(node_modules|bower_components)/,
             loader: 'babel-loader'
-        }]
+        },{
+            test: /\.css$/,
+            use: [ 'style-loader', 'css-loader' ]
+        }, {
+            test: /\.(gif|jpg|png|woff|svg|eot|ttf)\??.*$/,
+            loader: 'url-loader?limit=1024'
+        },]
     },
     optimization: {
         minimize: true
