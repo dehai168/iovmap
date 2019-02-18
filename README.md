@@ -15,7 +15,7 @@ Based on leaflet development, a multi-map adaptation SDK facilitates the develop
 ## 测试
    npm run test
 ## Demo
-    [Demo](https://github.com/dehai168/HMap/blob/master/demo/index.html)
+    [Demo](https://dehai.site/HMap/docs/index.html)
 ## 文档
-    [API](https://github.com/dehai168/HMap/blob/master/docs/api.md)
+    [API](https://dehai.site/HMap/docs/api.md)
 ## 其他
