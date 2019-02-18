@@ -1,5 +1,8 @@
-title: Slate theme
-description: Slate is a theme for GitHub Pages.
+title: 来自北方的HMap项目主页
+description: 基于leaflet开发,支持多地图切换,统一封装上层业务调用接口,让更换地图不用再修改业务代码,以满足行业应用。
 show_downloads: true
 google_analytics:
 theme: jekyll-theme-slate
+author: level
+timezone: Asia/Shanghai
+
