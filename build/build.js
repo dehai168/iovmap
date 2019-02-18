@@ -6,13 +6,14 @@ const fs = require('fs');
 const path = require('path');
 
 const distDir = path.resolve(__dirname, '../dist');
+const distDir2 = path.resolve(__dirname, '../docs/dist');
 
 let files = fs.readdirSync(distDir);
 files.forEach(f => {
     fs.unlinkSync(path.join(distDir, f));
 });
 
-webpack(webpackConfig, function(err, stats) {
+webpack(webpackConfig, function (err, stats) {
     if (err) throw err
     process.stdout.write(stats.toString({
         colors: true,
@@ -21,4 +22,10 @@ webpack(webpackConfig, function(err, stats) {
         chunks: false,
         chunkModules: false
     }) + '\n\n');
+
+    // if(!fs.existsSync(distDir2)){
+    //     fs.mkdirSync(distDir2);
+    // }else{
+        
+    // }
 });
