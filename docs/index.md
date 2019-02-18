@@ -25,8 +25,8 @@ let hmap = new HMap.Map('app', 'BMap');
 
 ### Demo
 
-[打开]('/HMap/demo.html')
+[打开](demo.html)
 
 ### API
 
-[打开]('/HMap/api.md')
+[打开](api.md)
