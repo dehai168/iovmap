@@ -2,17 +2,21 @@
 <html lang="en">
 
 <head>
-    <title>HMap 演示</title>
+    <title>HMap项目演示页面</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <script src="https://dehai167-dd.oss-cn-shanghai.aliyuncs.com/github/HMap/hmap.min.js"></script>
+    <script src="dist/hmap.min.js"></script>
 </head>
 
 <body>
     <div id="app" style="width: 800px; height: 600px;"></div>
+    <button onclick="changeMap()">改变地图</button>
     <script>
-        let hmap = new HMap.Map('app', 'BMap');
+        let hmap = new HMap.Map('app', {type:'BMap'});
+        let changeMap=function(){
+            hmap.changeMap('BMap');
+        }
     </script>
 </body>
 

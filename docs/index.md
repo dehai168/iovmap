@@ -19,8 +19,8 @@ es6+webpack+leaflet
 <div id="app" style="width: 800px; height: 600px;"></div>
 ```
 ```js
-// Javascript code .
 let hmap = new HMap.Map('app', 'BMap');
+hmap.setZoom(8);
 ```
 
 ### Demo

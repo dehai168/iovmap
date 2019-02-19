@@ -15,23 +15,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export class Marker{
-    constructor(){
-
+export class Marker {
+    constructor(map, point) {
+        
     }
     /**
-     * 创建地图
-     * @param {string} domId 
-     * @param {string} mapType 
+     * 移动标记
+     * @param {Array} mapType 
      */
-    create(domId,mapType){
-
-    }
-    /**
-     * 修改地图
-     * @param {string} mapType 
-     */
-    change(mapType){
+    move(point) {
 
     }
 }

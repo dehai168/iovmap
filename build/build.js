@@ -23,9 +23,22 @@ webpack(webpackConfig, function (err, stats) {
         chunkModules: false
     }) + '\n\n');
 
-    // if(!fs.existsSync(distDir2)){
-    //     fs.mkdirSync(distDir2);
-    // }else{
-        
-    // }
+    console.log('正在dist目录文件到docs目录文件');
+    // 复制一部分到docs目录
+    if (!fs.existsSync(distDir2)) {
+        fs.mkdirSync(distDir2);
+    } else {
+        //清理现有文件
+        let files2 = fs.readdirSync(distDir2);
+        files2.forEach(f => {
+            fs.unlinkSync(path.join(distDir2, f));
+        });
+        //复制文件
+        let files = fs.readdirSync(distDir);
+        files.forEach(f => {
+            let from = path.join(distDir, f);
+            let to = path.join(distDir2, f);
+            fs.writeFileSync(to, fs.readFileSync(from));
+        });
+    }
 });
