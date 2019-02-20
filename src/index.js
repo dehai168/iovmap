@@ -1,9 +1,9 @@
 import { Map } from './map/index'
-import { Marker } from "./marker/index";
+import { MarkerList } from "./markerlist/index";
 
 const HMap = {
     Map,
-    Marker
+    MarkerList
 };
 export {
     HMap

@@ -41,30 +41,9 @@ export class Map {
             delete option.crs;
         }
         this.map = new L.map(domid, option);
-        // Canvas 画板部分
-        let canvasLayer = L.GridLayer.extend({
-            createTile: function (coords) {
-                // create a <canvas> element for drawing
-                var tile = L.DomUtil.create('canvas', 'leaflet-tile');
-                // setup tile width and height according to the options
-                var size = this.getTileSize();
-                tile.width = size.x;
-                tile.height = size.y;
-                // get a canvas context and draw something on it using coords.x, coords.y and coords.z
-                var ctx = tile.getContext('2d');
-                ctx.clearRect(0, 0, tile.width, tile.height);
-                //设置绘制颜色
-                ctx.fillStyle = "#0000FF";
-                //绘制成矩形
-                ctx.fillRect(2, 2, 4, 4);
-                // return the tile so it can be rendered on screen
-                return tile;
-            }
-        });
 
         this.map.addControl(L.control.zoom({ position: "topright" }));
         this.map.addLayer(this.mapLayer);
-        // this.map.addLayer(canvasLayer);
         this.map.setView(center, zoom);
     }
     _getLayer(type) {
@@ -164,5 +143,28 @@ export class Map {
         this.map.removeLayer(this.mapLayer);
         this.map.addLayer(mapLayer);
         this.mapLayer = mapLayer;
+    }
+    /**
+     * 创建自定义Canvas面板
+     */
+    createCanvasCtx() {
+        let canvas = L.DomUtil.create('canvas');
+        let pan = this.map.createPane('customCanvas');
+        let size = this.map.getSize();
+        let that = this;
+        this.map.on('resize', function () {
+            size = that.map.getSize();
+            canvas.style['width'] = size.x + 'px';
+            canvas.style['height'] = size.y + 'px';
+        });
+        this.map.on('moveend',function(){
+            var topLeft = that.map.containerPointToLayerPoint([0, 0]);
+            L.DomUtil.setPosition(canvas, topLeft);
+        })
+        canvas.width = size.x;
+        canvas.height = size.y;
+        pan.style['z-index'] = 300;
+        pan.appendChild(canvas);
+        return canvas.getContext('2d');
     }
 }

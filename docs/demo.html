@@ -11,11 +11,46 @@
 
 <body>
     <div id="app" style="width: 800px; height: 600px;"></div>
-    <button onclick="changeMap()">改变地图</button>
+    <canvas id="canvas"  width="300" height="300"></canvas>
+    <button onclick="addMarker()">增加marker</button>
+    <button onclick="test()">test</button>
     <script>
-        let hmap = new HMap.Map('app', {type:'BMap'});
-        let changeMap=function(){
-            hmap.changeMap('BMap');
+        let hmap = new HMap.Map('app', { type: 'BMap' });
+        let ctx = hmap.createCanvasCtx();
+        let markerList = new HMap.MarkerList(hmap.map, ctx);
+        let addMarker = function () {
+            markerList.push([
+                {
+                    lat: 33.161818,
+                    lng: 105.523438,
+                    text: '渝D123456',
+                    state: 0
+                },
+                {
+                    lat: 34.161818,
+                    lng: 106.523438,
+                    text: '渝D223456',
+                    state: 1
+                },
+                {
+                    lat: 35.161818,
+                    lng: 107.523438,
+                    text: '渝D323456',
+                    state: 2
+                }
+            ])
+        };
+        var test = function () {
+            let ele = document.getElementById('canvas');
+            let ctx = ele.getContext('2d');
+            ctx.beginPath();
+            ctx.strokeStyle = 'black';
+            ctx.lineWidth = 0.5;
+            ctx.arc(100, 75, 5, 0, 2 * Math.PI);
+            ctx.fillStyle = "red";
+            ctx.fill();
+            ctx.stroke();
+            ctx.save();
         }
     </script>
 </body>
