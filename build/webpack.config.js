@@ -9,17 +9,20 @@ module.exports = {
         filename: 'hmap.min.js',
         path: path.resolve(__dirname, '../dist')
     },
+    devServer: {
+        contentBase: './docs'
+    },
     module: {
         rules: [{
             test: /\.js$/,
             exclude: /(node_modules|bower_components)/,
             loader: 'babel-loader'
-        },{
+        }, {
             test: /\.css$/,
-            use: [ 'style-loader', 'css-loader' ]
+            use: ['style-loader', 'css-loader']
         }, {
             test: /\.(gif|jpg|png|woff|svg|eot|ttf)\??.*$/,
-            loader: 'url-loader?limit=1024'
+            use: 'url-loader?limit=1024'
         },]
     },
     optimization: {

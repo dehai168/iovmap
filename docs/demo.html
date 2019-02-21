@@ -7,18 +7,38 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <script src="dist/hmap.min.js"></script>
+    <script src="line.js"></script>
 </head>
 
 <body>
-    <div id="app" style="width: 800px; height: 600px;"></div>
-    <canvas id="canvas"  width="300" height="300"></canvas>
+    <div id="app" style="width: 600px; height: 400px;"></div>
+    <canvas id="canvas" width="200" height="200"></canvas>
     <button onclick="addMarker()">增加marker</button>
-    <button onclick="test()">test</button>
+    <button onclick="addMarkerList()">增加markerList</button>
+    <button onclick="addPolyline()">增加polyline</button>
+    <button onclick="test()">TEST</button>
     <script>
-        let hmap = new HMap.Map('app', { type: 'BMap' });
-        let ctx = hmap.createCanvasCtx();
-        let markerList = new HMap.MarkerList(hmap.map, ctx);
+        let hmap = new HMap.Map('app', { type: 'AMap' });
+        let canvas = hmap.createCanvasPane();
+        let markerList = new HMap.MarkerList(hmap.map, canvas, function (ele) {
+            let now = new Date();
+            markerList.setPopupContent(ele.text + now.getTime());
+        });
         let addMarker = function () {
+            let start = line[0];
+            let marker = new HMap.Marker(hmap.map, start.lat, start.lng, './assets/images/circle_blue_16_ns.png', [16, 16], [8, 8], '异常停车点');
+            let index = 0;
+            window.setInterval(function () {
+                if (index < line.length) {
+                    let temp = line[index];
+                    marker.moveTo(temp.lat, temp.lng);
+                } else {
+                    index = 0;
+                }
+                index++;
+            }, 1000);
+        };
+        let addMarkerList = function () {
             markerList.push([
                 {
                     lat: 33.161818,
@@ -40,6 +60,9 @@
                 }
             ])
         };
+        let addPolyline = function () {
+            let polyline = new HMap.Polyline(hmap.map, line);
+        }
         var test = function () {
             let ele = document.getElementById('canvas');
             let ctx = ele.getContext('2d');

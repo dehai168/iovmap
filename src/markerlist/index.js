@@ -16,28 +16,65 @@
  * limitations under the License.
  */
 export class MarkerList {
-    constructor(map, ctx) {
+    constructor(map, canvas, cb) {
         this.map = map;
-        this.ctx = ctx;
+        this.canvas = canvas;
+        this.clickCB = cb;
+        this.boundsList = [];
+        this.ctx = canvas.getContext('2d');
         let that = this;
-
-        this.map.on('zoomend', function () {
+        this.drawEvent = function (e) {
             that._draw();
-        });
-        this.map.on('resize', function () {
-            that._draw();
-        });
-        this.map.on('moveend', function () {
-            that._draw();
-        });
+        };
+        this.map.on('zoomend', this.drawEvent);
+        this.map.on('resize', this.drawEvent);
+        this.map.on('moveend', this.drawEvent);
+        this._addClickEvent();
     }
     /**
-     * 增加 marker 列表
+     * 增加 markerList
      * @param {Array} listArray 
      */
     push(listArray) {
         this.list = listArray;
         this._draw();
+    }
+    /**
+     * 清理 markerList
+     */
+    clear() {
+        this.list.length = 0;
+        this._draw();
+    }
+    /**
+     * 设定气泡内容
+     * @param {*} htmlStr 
+     */
+    setPopupContent(htmlStr) {
+        this.popup.setContent(htmlStr);
+    }
+    /**
+     * 增加点击事件监听
+     */
+    _addClickEvent() {
+        let that = this;
+        this.canvas.addEventListener('click', function (e) {
+            let x = e.layerX;
+            let y = e.layerY;
+            let point = [x, y];
+            that.boundsList.forEach(element => {
+                if (element.bounds.contains(point)) {
+                    let latlng = that.map.containerPointToLatLng(point);
+                    that.popup = L.popup()
+                        .setLatLng(latlng)
+                        .setContent(element.ele.text)
+                        .openOn(that.map);
+                    if (that.clickCB) {
+                        that.clickCB(element.ele);
+                    }
+                }
+            });
+        });
     }
     /**
      * 重绘
@@ -59,12 +96,18 @@ export class MarkerList {
      * @param {object} element 
      */
     _drawArc(element) {
-        let point = this.map.project([element.lat, element.lng],this.map.getZoom());
+        let point = this.map.latLngToLayerPoint([element.lat, element.lng]);
+        point = this.map.layerPointToContainerPoint(point);
         this.radius = 5;  //圆圈半径
         this.ctx.beginPath();
         this.ctx.strokeStyle = 'black';
         this.ctx.lineWidth = 1;
         this.ctx.arc(point.x, point.y, this.radius, 0, 2 * Math.PI);
+        let bounds = L.bounds([[point.x - this.radius, point.y - this.radius], [point.x + this.radius, point.y + this.radius]]);
+        this.boundsList.push({
+            ele: element,
+            bounds: bounds,
+        });
         switch (element.state) {
             case 0: this.ctx.fillStyle = "#D8D8D8"; break; //离线
             case 1: this.ctx.fillStyle = "#82FA58"; break; //在线
@@ -80,16 +123,17 @@ export class MarkerList {
      * @param {object} element 
      */
     _drawText(element) {
-        let point = this.map.project([element.lat, element.lng],this.map.getZoom());
+        let point = this.map.latLngToLayerPoint([element.lat, element.lng]);
+        point = this.map.layerPointToContainerPoint(point);
         const width = 40;
         const height = 10;
         const x = point.x - width / 2;
         const y = point.y - this.radius - height;
-        //框部分
-        this.ctx.fillStyle = '#FAFAFA';
+        //框部分2
+        this.ctx.fillStyle = '#FFFFFF';
         this.ctx.fillRect(x, y, width, height);
         //字体部分
-        this.ctx.font = "8px sans-serif";
+        this.ctx.font = "italic small-caps 8px";
         this.ctx.strokeStyle = '#000000';
         this.ctx.strokeText(element.text, x, y + height, width);
     }

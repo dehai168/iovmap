@@ -19,6 +19,12 @@
 import L from 'leaflet';
 import proj4leaflet from "proj4leaflet";
 import 'leaflet/dist/leaflet.css';
+import 'leaflet/dist/images/layers-2x.png';
+import 'leaflet/dist/images/layers.png';
+import 'leaflet/dist/images/marker-icon-2x.png';
+import 'leaflet/dist/images/marker-icon.png';
+import 'leaflet/dist/images/marker-shadow.png';
+
 const map = Symbol('map')
 
 export class Map {
@@ -58,6 +64,31 @@ export class Map {
                         subdomains: [0, 1, 2, 3],
                         attribution: "ⓒ 2012 Daum",
                         tms: true
+                    }
+                );
+                break;
+            case "GMap":
+                mapLayer = new L.tileLayer('http://mt{s}.google.cn/vt/lyrs=m@160000000&hl=zh-CN&gl=CN&src=app&y={y}&x={x}&z={z}&s=Ga',
+                    {
+                        subdomains: [0, 1, 2, 3],
+                        attribution: '© <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+                    }
+                );
+                break;
+            case "SSMap":
+                mapLayer = new L.tileLayer('http://rt{s}.map.gtimg.com/realtimerender?z={z}&x={x}&y={y}&type=vector&style=0',
+                    {
+                        tms: true,
+                        subdomains: [0, 1, 2, 3],
+                        attribution: '© <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+                    }
+                );
+                break;
+            case "AMap":
+                mapLayer = new L.tileLayer('http://webrd0{s}.is.autonavi.com/appmaptile?x={x}&y={y}&z={z}&lang=zh_cn&size=1&scale=1&style=8',
+                    {
+                        subdomains: [1, 2, 3, 4],
+                        attribution: '© <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
                     }
                 );
                 break;
@@ -147,24 +178,37 @@ export class Map {
     /**
      * 创建自定义Canvas面板
      */
-    createCanvasCtx() {
+    createCanvasPane() {
         let canvas = L.DomUtil.create('canvas');
-        let pan = this.map.createPane('customCanvas');
+        let pane = this.map.createPane('customCanvas');
         let size = this.map.getSize();
         let that = this;
-        this.map.on('resize', function () {
+
+        this.customCanvasPaneResizeEvent = function (e) {
             size = that.map.getSize();
-            canvas.style['width'] = size.x + 'px';
-            canvas.style['height'] = size.y + 'px';
-        });
-        this.map.on('moveend',function(){
-            var topLeft = that.map.containerPointToLayerPoint([0, 0]);
+            canvas.width = size.x;
+            canvas.height = size.y;
+        };
+        this.customCanvasPaneMoveendEvent = function (e) {
+            let topLeft = that.map.containerPointToLayerPoint([0, 0]);
             L.DomUtil.setPosition(canvas, topLeft);
-        })
+        };
+        this.map.on('resize', this.customCanvasPaneResizeEvent);
+        this.map.on('moveend', this.customCanvasPaneMoveendEvent);
+
         canvas.width = size.x;
         canvas.height = size.y;
-        pan.style['z-index'] = 300;
-        pan.appendChild(canvas);
-        return canvas.getContext('2d');
+        pane.style['z-index'] = 300;
+        pane.appendChild(canvas);
+        return canvas;
+    }
+    /**
+     * 移除自定义Canvas面板
+     */
+    removeCanvasPane() {
+        let pane = this.map.getPane('customCanvas');
+        pane.parentNode.removeChild(pane);
+        this.map.off('resize', this.customCanvasPaneResizeEvent);
+        this.map.off('moveend', this.customCanvasPaneMoveendEvent);
     }
 }

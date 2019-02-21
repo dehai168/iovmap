@@ -4,7 +4,9 @@
   "description": "a map sdk base on leaflet",
   "main": "index.js",
   "scripts": {
+    "watch": "webpack --watch",
     "build": "node build/build.js",
+    "dev": "webpack-dev-server --open",
     "test": "npm run test"
   },
   "repository": {
@@ -32,7 +34,9 @@
     "file-loader": "^3.0.1",
     "style-loader": "^0.23.1",
     "url-loader": "^1.1.2",
-    "webpack": "^4.23.1"
+    "webpack": "^4.23.1",
+    "webpack-cli": "^3.2.3",
+    "webpack-dev-server": "^3.2.0"
   },
   "dependencies": {
     "leaflet": "^1.4.0",
