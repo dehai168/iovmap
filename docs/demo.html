@@ -16,9 +16,11 @@
     <button onclick="addMarker()">增加marker</button>
     <button onclick="addMarkerList()">增加markerList</button>
     <button onclick="addPolyline()">增加polyline</button>
+    <button onclick="drawMarker()">画标记</button>
+    <button onclick="drawPolyline()">画曲线</button>
     <button onclick="test()">TEST</button>
     <script>
-        let hmap = new HMap.Map('app', { type: 'AMap' });
+        let hmap = new HMap.Map('app', { type: 'BMap' });
         let canvas = hmap.createCanvasPane();
         let markerList = new HMap.MarkerList(hmap.map, canvas, function (ele) {
             let now = new Date();
@@ -63,6 +65,18 @@
         let addPolyline = function () {
             let polyline = new HMap.Polyline(hmap.map, line);
         }
+        let drawMarker = function () {
+            let draw = new HMap.Draw(hmap.map,function (latlng) {
+                console.log(latlng);
+            });
+            draw.drawMarker();
+        }
+        let drawPolyline=function(){
+            let draw = new HMap.Draw(hmap.map,function (latlng) {
+                console.log(latlng);
+            });
+            draw.drawPolyline();
+        };
         var test = function () {
             let ele = document.getElementById('canvas');
             let ctx = ele.getContext('2d');

@@ -4,6 +4,7 @@ module.exports = {
     mode: 'production',
     entry: ['./src/index.js'],
     output: {
+        publicPath: 'dist/',
         libraryTarget: 'umd',
         umdNamedDefine: true,
         filename: 'hmap.min.js',

@@ -21,7 +21,6 @@ export class Polyline {
         this.polylines = [];
         let that = this;
         let latlngArray = [];
-        let last = false;
         let draw = function () {
             if (latlngArray.length > 0) {
                 const polyline = L.polyline(latlngArray, { color: color, weight: 5 });
