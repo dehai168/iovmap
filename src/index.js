@@ -8,7 +8,7 @@ import L from 'leaflet';
 import proj4leaflet from "proj4leaflet";
 import 'leaflet/dist/leaflet.css';
 
-const HMap = {
+const IOVMap = {
     Map,
     Marker,
     MarkerList,
@@ -16,5 +16,5 @@ const HMap = {
     Draw,
 };
 export {
-    HMap
+    IOVMap
 };

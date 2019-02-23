@@ -1,4 +1,4 @@
-# HMap
+# IOVMap
 
 Based on leaflet development, a multi-map adaptation SDK facilitates the development and switching of map functions for upper-level services to meet industry applications.
 
@@ -28,10 +28,10 @@ Based on leaflet development, a multi-map adaptation SDK facilitates the develop
 
 ## Demo
 
-    [Demo](https://dehai.site/HMap/docs/index.html)
+    [Demo](https://dehai.site/iovmap/docs/index.html)
 
 ## 文档
 
-    [API](https://dehai.site/HMap/docs/api.md)
+    [API](https://dehai.site/iovmap/docs/api.md)
 
 ## 其他

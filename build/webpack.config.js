@@ -7,7 +7,7 @@ module.exports = {
         publicPath: 'dist/',
         libraryTarget: 'umd',
         umdNamedDefine: true,
-        filename: 'hmap.min.js',
+        filename: 'iovmap.min.js',
         path: path.resolve(__dirname, '../dist')
     },
     devServer: {

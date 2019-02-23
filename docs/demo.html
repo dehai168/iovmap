@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <script src="dist/hmap.min.js"></script>
+    <script src="dist/iovmap.min.js"></script>
     <script src="line.js"></script>
 </head>
 
@@ -20,15 +20,15 @@
     <button onclick="drawPolyline()">画曲线</button>
     <button onclick="test()">TEST</button>
     <script>
-        let hmap = new HMap.Map('app', { type: 'BMap' });
-        let canvas = hmap.createCanvasPane();
-        let markerList = new HMap.MarkerList(hmap.map, canvas, function (ele) {
+        let iovmap = new IOVMap.Map('app', { type: 'BMap' });
+        let canvas = iovmap.createCanvasPane();
+        let markerList = new IOVMap.MarkerList(iovmap.map, canvas, function (ele) {
             let now = new Date();
             markerList.setPopupContent(ele.text + now.getTime());
         });
         let addMarker = function () {
             let start = line[0];
-            let marker = new HMap.Marker(hmap.map, start.lat, start.lng, './assets/images/circle_blue_16_ns.png', [16, 16], [8, 8], '异常停车点');
+            let marker = new IOVMap.Marker(iovmap.map, start.lat, start.lng, './assets/images/circle_blue_16_ns.png', [16, 16], [8, 8], '异常停车点');
             let index = 0;
             window.setInterval(function () {
                 if (index < line.length) {
@@ -63,16 +63,16 @@
             ])
         };
         let addPolyline = function () {
-            let polyline = new HMap.Polyline(hmap.map, line);
+            let polyline = new IOVMap.Polyline(iovmap.map, line);
         }
         let drawMarker = function () {
-            let draw = new HMap.Draw(hmap.map,function (latlng) {
+            let draw = new IOVMap.Draw(iovmap.map,function (latlng) {
                 console.log(latlng);
             });
             draw.drawMarker();
         }
         let drawPolyline=function(){
-            let draw = new HMap.Draw(hmap.map,function (latlng) {
+            let draw = new IOVMap.Draw(iovmap.map,function (latlng) {
                 console.log(latlng);
             });
             draw.drawPolyline();
