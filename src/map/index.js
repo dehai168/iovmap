@@ -103,8 +103,10 @@ export class Map {
         switch (type) {
             case 'BMap':
                 crs = new L.Proj.CRS(
-                    "EPSG:3395",
-                    "+proj=merc +lon_0=0 +k=1 +x_0=140 +y_0=-250 +datum=WGS84 +units=m +no_defs",
+                    //"EPSG:3395",
+                    //"+proj=merc +lon_0=0 +k=1 +x_0=140 +y_0=-250 +datum=WGS84 +units=m +no_defs",
+                    'EPSG:900913',
+                    '+proj=merc +a=6378206 +b=6356584.314245179 +lat_ts=0.0 +lon_0=0.0 +x_0=0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs',
                     {
                         resolutions: (function () {
                             let level = 19;

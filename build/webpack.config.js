@@ -2,7 +2,7 @@ const path = require('path');
 const webpack = require('webpack');
 module.exports = {
     mode: 'production',
-    entry: ['./src/index.js'],
+    entry: ['./index.js'],
     output: {
         publicPath: 'dist/',
         libraryTarget: 'umd',
