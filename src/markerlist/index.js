@@ -67,10 +67,10 @@ export class MarkerList {
                     let latlng = that.map.containerPointToLatLng(point);
                     that.popup = L.popup()
                         .setLatLng(latlng)
-                        .setContent(element.ele.text)
+                        .setContent('...加载中...')
                         .openOn(that.map);
                     if (that.clickCB) {
-                        that.clickCB(element.ele);
+                        that.clickCB(element.ele.id);
                     }
                 }
             });
