@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-    <title>HMap项目演示页面</title>
+    <title>iovmap项目演示页面</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
@@ -10,85 +10,130 @@
     <script src="line.js"></script>
 </head>
 
-<body>
+<body onload="initMap()">
     <div id="app" style="width: 600px; height: 400px;"></div>
-    <canvas id="canvas" width="200" height="200"></canvas>
-    <button onclick="addMarker()">增加marker</button>
-    <button onclick="addMarkerList()">增加markerList</button>
-    <button onclick="addPolyline()">增加polyline</button>
-    <button onclick="drawMarker()">画标记</button>
-    <button onclick="drawPolyline()">画曲线</button>
-    <button onclick="test()">TEST</button>
+    <div style="border:1px solid red;margin-top: 10px;">
+        <button onclick="initMap()">初始化地图</button>
+        <button onclick="setZoom()">缩放地图</button>
+        <button onclick="flyTo()">移动地图</button>
+    </div>
+    <div style="border:1px solid green;margin-top: 10px;">
+        <button onclick="initMarker()">初始化marker</button>
+        <button onclick="change()">改变marker外形</button>
+        <button onclick="moveTo()">移动marker</button>
+        <button onclick="removeMarker()">移除marker</button>
+    </div>
+    <div style="border:1px solid gray;margin-top: 10px;">
+        <button onclick="initMarkerList()">初始化markerList</button>
+        <button onclick="push()">增加markerList内容</button>
+        <button onclick="removeMarkerList()">移除</button>
+    </div>
+    <div style="border:1px solid yellow;margin-top: 10px;">
+        <button onclick="initPolyline()">初始化polyline</button>
+        <button onclick="remove()">移除polyline</button>
+    </div>
+    <div style="border:1px solid lightcoral;margin-top: 10px;">
+        <button onclick="initDraw()">初始化draw</button>
+        <button onclick="drawMarker()">画标记</button>
+        <button onclick="drawPolyline()">画曲线</button>
+        <button onclick="removeDraw()">移除draw</button>
+    </div>
     <script>
-        let iovmap = new IOVMap.Map('app', { type: 'BMap' });
-        let canvas = iovmap.createCanvasPane();
-        let markerList = new IOVMap.MarkerList(iovmap.map, canvas, function (ele) {
-            let now = new Date();
-            markerList.setPopupContent(ele.text + now.getTime());
-        });
-        let addMarker = function () {
+        let iovMap = null;
+        let iovMarker = null;
+        let markerList = null;
+        let polyline = null;
+        let draw = null;
+        let initMap = function () {
+            iovMap = new IOVMap.Map('app', { type: 'BMap' });
+        };
+        let setZoom = function () {
+            iovMap.setZoom(10);
+        };
+        let flyTo = function () {
+            iovMap.flyTo([29.716608, 115.115005]);
+        };
+        // Marker
+        let initMarker = function () {
             let start = line[0];
-            let marker = new IOVMap.Marker(iovmap.map, start.lat, start.lng, './assets/images/circle_blue_16_ns.png', [16, 16], [8, 8], '异常停车点');
+            iovMarker = new IOVMap.Marker(iovMap.map, start.lat, start.lng, './assets/images/circle_blue_16_ns.png', [16, 16], [8, 8], '异常停车点');
+        };
+        let change = function () {
+            iovMarker.change('./assets/images/circle_black_16_ns.png');
+        };
+        let moveTo = function () {
             let index = 0;
             window.setInterval(function () {
                 if (index < line.length) {
                     let temp = line[index];
-                    marker.moveTo(temp.lat, temp.lng);
+                    iovMarker.moveTo(temp.lat, temp.lng);
                 } else {
                     index = 0;
                 }
                 index++;
             }, 1000);
         };
-        let addMarkerList = function () {
+        let removeMarker=function(){
+            iovMarker.remove();
+        }
+        // markerList
+        let initMarkerList = function () {
+            let canvas = iovMap.createCanvasPane();
+            markerList = new IOVMap.MarkerList(iovMap.map, canvas, function (id) {
+                let now = new Date();
+                markerList.setPopupContent(now.getTime()+"");
+            });
+        };
+        let push = function () {
             markerList.push([
                 {
                     lat: 33.161818,
                     lng: 105.523438,
                     text: '渝D123456',
-                    state: 0
+                    state: 0,
+                    id: 0,
                 },
                 {
                     lat: 34.161818,
                     lng: 106.523438,
                     text: '渝D223456',
-                    state: 1
+                    state: 1,
+                    id: 1,
                 },
                 {
                     lat: 35.161818,
                     lng: 107.523438,
                     text: '渝D323456',
-                    state: 2
+                    state: 2,
+                    id: 2,
                 }
-            ])
+            ]);
         };
-        let addPolyline = function () {
-            let polyline = new IOVMap.Polyline(iovmap.map, line);
-        }
-        let drawMarker = function () {
-            let draw = new IOVMap.Draw(iovmap.map,function (latlng) {
+        let removeMarkerList = function () {
+            markerList.remove();
+        };
+        //polyline
+        let initPolyline = function () {
+            polyline = new IOVMap.Polyline(iovMap.map, line);
+        };
+        let remove = function () {
+            polyline.remove();
+        };
+        // draw
+        let initDraw = function () {
+            draw = new IOVMap.Draw(iovMap.map, function (latlng) {
                 console.log(latlng);
             });
+        };
+        let drawMarker = function () {
             draw.drawMarker();
         }
-        let drawPolyline=function(){
-            let draw = new IOVMap.Draw(iovmap.map,function (latlng) {
-                console.log(latlng);
-            });
+        let drawPolyline = function () {
             draw.drawPolyline();
         };
-        var test = function () {
-            let ele = document.getElementById('canvas');
-            let ctx = ele.getContext('2d');
-            ctx.beginPath();
-            ctx.strokeStyle = 'black';
-            ctx.lineWidth = 0.5;
-            ctx.arc(100, 75, 5, 0, 2 * Math.PI);
-            ctx.fillStyle = "red";
-            ctx.fill();
-            ctx.stroke();
-            ctx.save();
-        }
+        let removeDraw = function () {
+            draw.remove();
+        };
     </script>
 </body>
 

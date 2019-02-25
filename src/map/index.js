@@ -142,7 +142,7 @@ export class Map {
      * @param {array} point [lng,lat]
      */
     flyTo(point) {
-        if (typeof point === 'array') {
+        if (typeof point === 'object') {
             this.map.flyTo(point);
         }
     }

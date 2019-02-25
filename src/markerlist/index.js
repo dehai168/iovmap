@@ -42,9 +42,9 @@ export class MarkerList {
     /**
      * 清理 markerList
      */
-    clear() {
+    remove() {
         this.list.length = 0;
-        this._draw();
+        this._clear();
     }
     /**
      * 设定气泡内容
@@ -77,12 +77,19 @@ export class MarkerList {
         });
     }
     /**
+     * 清理
+     */
+    _clear(){
+        let size = this.map.getSize();
+        this.ctx.clearRect(0, 0, size.x, size.y);
+        this.boundsList.length=0;
+    }
+    /**
      * 重绘
      */
     _draw() {
         let that = this;
-        let size = this.map.getSize();
-        this.ctx.clearRect(0, 0, size.x, size.y);
+        this._clear();
         if (this.list && this.list.length > 0) {
             this.list.forEach(element => {
                 that._drawArc(element);

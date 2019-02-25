@@ -151,7 +151,9 @@ export class Draw {
             let element = this.markerList.shift();
             element.remove();
         }
-        this.path.remove();
+        if(this.path){
+            this.path.remove();
+        }
         this.latlngList.length = 0;
         this.okMarker.remove();
         this.cancelMarker.remove();
