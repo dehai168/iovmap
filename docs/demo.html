@@ -36,6 +36,9 @@
         <button onclick="initDraw()">初始化draw</button>
         <button onclick="drawMarker()">画标记</button>
         <button onclick="drawPolyline()">画曲线</button>
+        <button onclick="drawRectangle()">画矩形</button>
+        <button onclick="drawPolygon()">画多边形</button>
+        <button onclick="drawCircle()">画圆形</button>
         <button onclick="removeDraw()">移除draw</button>
     </div>
     <script>
@@ -73,7 +76,7 @@
                 index++;
             }, 1000);
         };
-        let removeMarker=function(){
+        let removeMarker = function () {
             iovMarker.remove();
         }
         // markerList
@@ -81,7 +84,7 @@
             let canvas = iovMap.createCanvasPane();
             markerList = new IOVMap.MarkerList(iovMap.map, canvas, function (id) {
                 let now = new Date();
-                markerList.setPopupContent(now.getTime()+"");
+                markerList.setPopupContent(now.getTime() + "");
             });
         };
         let push = function () {
@@ -130,6 +133,15 @@
         }
         let drawPolyline = function () {
             draw.drawPolyline();
+        };
+        let drawRectangle = function () {
+            draw.drawRectangle();
+        };
+        let drawPolygon = function () {
+            draw.drawPolygon();
+        };
+        let drawCircle = function () {
+            draw.drawCircle();
         };
         let removeDraw = function () {
             draw.remove();

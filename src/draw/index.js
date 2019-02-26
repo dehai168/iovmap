@@ -112,33 +112,39 @@ export class Draw {
             let dragIndex = that._markerListIndex(e.target);
             that.tempLatlngList.length = 0;
             if (dragIndex === 0) {
-                that.tempLatlngList.push(e.latlng);
-                that.tempLatlngList.push(that.markerList[++dragIndex].getLatLng());
-            }else if(dragIndex===that.markerList.length-1){
+                that.tempLatlngList.push(that.markerList[0].getLatLng());
+                that.tempLatlngList.push(that.markerList[1].getLatLng());
+            } else if (dragIndex === that.markerList.length - 1) {
                 that.tempLatlngList.push(that.markerList[--dragIndex].getLatLng());
-                that.tempLatlngList.push(e.latlng);
-            }else{
-                that.tempLatlngList.push(that.markerList[--dragIndex].getLatLng());
-                that.tempLatlngList.push(e.latlng);
-                that.tempLatlngList.push(that.markerList[++dragIndex].getLatLng());
+                that.tempLatlngList.push(that.markerList[dragIndex].getLatLng());
+            } else {
+                let f = dragIndex - 1;
+                let t = dragIndex + 1;
+                that.tempLatlngList.push(that.markerList[f].getLatLng());
+                that.tempLatlngList.push(that.markerList[dragIndex].getLatLng());
+                that.tempLatlngList.push(that.markerList[t].getLatLng());
             }
             that.tempPath = L.polyline(that.tempLatlngList, { color: 'blue', dashArray: 5 });
             that.tempPath.addTo(that.map);
         };
         let dragEvent = function (e) {
             let dragIndex = that._markerListIndex(e.target);
+            let latlng = that.markerList[dragIndex].getLatLng();
             if (dragIndex === 0) {
-                that.tempLatlngList[0] = e.latlng;
+                that.tempLatlngList[0] = latlng;
             } else if (dragIndex === that.markerList.length - 1) {
-                that.tempLatlngList[1] = e.latlng;
+                that.tempLatlngList[1] = latlng;
+                that.okMarker.setLatLng([latlng.lat, latlng.lng]);
+                that.cancelMarker.setLatLng([latlng.lat, latlng.lng]);
             } else {
-                that.tempLatlngList[1] = e.latlng;
+                that.tempLatlngList[1] = latlng;
             }
             that.tempPath.setLatLngs(that.tempLatlngList);
         };
         let dragEndEvent = function (e) {
             let dragIndex = that._markerListIndex(e.target);
-            that.latlngList[dragIndex] = [e.latlng.lat, e.latlng.lng];
+            let temp = that.markerList[dragIndex].getLatLng();
+            that.latlngList[dragIndex] = [temp.lat, temp.lng];
             that.path.setLatLngs(that.latlngList);
             that.tempPath.remove();
         };
@@ -177,8 +183,154 @@ export class Draw {
         that.map.on('click', clickEvent);
         that.map.on('dblclick', doubleClickEvent);
     }
-    drawPolygon(latlngArray) {
+    /**
+     * 绘制矩形
+     * @param {*} latlngArray 
+     */
+    drawRectangle(latlngArray) {
+        let that = this;
+        let okClickEvent = function (e) {
+            let temp = that.latlngList;
+            if (that.cb) {
+                that.cb(temp);
+            }
+            that.remove();
+        };
+        let cancelClickEvent = function (e) {
+            that.remove();
+            that.map.on('click', clickEvent);
+        };
+        let dragEvent = function (e) {
+            let dragIndex = that._markerListIndex(e.target);
+            let latlng = that.markerList[dragIndex].getLatLng();
+            if (dragIndex === 0) {
+                that.latlngList[0] = [latlng.lat, latlng.lng];
+            } else {
+                that.latlngList[1] = [latlng.lat, latlng.lng];
+                that.okMarker.setLatLng([latlng.lat, latlng.lng]);
+                that.cancelMarker.setLatLng([latlng.lat, latlng.lng]);
+            }
+            that.path.setBounds(that.latlngList);
+        };
+        let clickEvent = function (e) {
+            that.latlngList.push([
+                e.latlng.lat,
+                e.latlng.lng,
+            ]);
+            let marker = L.marker(e.latlng, { icon: that.dragIcon, draggable: true });
+            marker.on('drag', dragEvent);
+            marker.addTo(that.map);
+            that.markerList.push(marker);
+            if (that.latlngList.length === 2) {
+                that.path = L.rectangle(that.latlngList, { color: 'red' });
+                that.path.addTo(that.map);
+                that.map.off('click', clickEvent);
 
+                that.okMarker = L.marker(e.latlng, { icon: that.okIcon });
+                that.cancelMarker = L.marker(e.latlng, { icon: that.cancelIcon });
+
+                that.okMarker.on('click', okClickEvent);
+                that.cancelMarker.on('click', cancelClickEvent);
+
+                that.okMarker.addTo(that.map);
+                that.cancelMarker.addTo(that.map);
+            }
+        };
+        that.map.on('click', clickEvent);
+    }
+    /**
+     * 绘制多边形
+     * @param {*} latlngArray 
+     */
+    drawPolygon(latlngArray) {
+        let that = this;
+        let okClickEvent = function (e) {
+            let temp = that.latlngList;
+            if (that.cb) {
+                that.cb(temp);
+            }
+            that.remove();
+        };
+        let cancelClickEvent = function (e) {
+            that.remove();
+            that.map.on('click', clickEvent);
+            that.map.on('dblclick', doubleClickEvent);
+        };
+        let dragStartEvent = function (e) {
+            let dragIndex = that._markerListIndex(e.target);
+            that.tempLatlngList.length = 0;
+            let f = dragIndex === 0 ? (that.markerList.length - 1) : dragIndex - 1;
+            let t = dragIndex === (that.markerList.length - 1) ? 0 : dragIndex + 1;
+            console.log(f + '|' + dragIndex + '|' + t + '|' + that.markerList.length);
+            that.tempLatlngList.push(that.markerList[f].getLatLng());
+            that.tempLatlngList.push(that.markerList[dragIndex].getLatLng());
+            that.tempLatlngList.push(that.markerList[t].getLatLng());
+            that.tempPath = L.polyline(that.tempLatlngList, { color: 'blue', dashArray: 5 });
+            that.tempPath.addTo(that.map);
+        };
+        let dragEvent = function (e) {
+            let dragIndex = that._markerListIndex(e.target);
+            let latlng = that.markerList[dragIndex].getLatLng();
+            if (dragIndex === 0) {
+                that.tempLatlngList[0] = latlng;
+            } else if (dragIndex === that.markerList.length - 1) {
+                that.tempLatlngList[1] = latlng;
+                if (that.okMarker) {
+                    that.okMarker.setLatLng([latlng.lat, latlng.lng]);
+                    that.cancelMarker.setLatLng([latlng.lat, latlng.lng]);
+                }
+            } else {
+                that.tempLatlngList[1] = latlng;
+            }
+            that.tempPath.setLatLngs(that.tempLatlngList);
+        };
+        let dragEndEvent = function (e) {
+            let dragIndex = that._markerListIndex(e.target);
+            let temp = that.markerList[dragIndex].getLatLng();
+            that.latlngList[dragIndex] = [temp.lat, temp.lng];
+            that.path.setLatLngs(that.latlngList);
+            that.tempPath.remove();
+        };
+        let clickEvent = function (e) {
+            if (that.latlngList.length > 0) {
+                if (that.latlngList[that.latlngList.length - 1] === [e.latlng.lat, e.latlng.lng]) {
+                    return false;
+                }
+            }
+            that.latlngList.push([
+                e.latlng.lat,
+                e.latlng.lng,
+            ]);
+            let marker = L.marker(e.latlng, { icon: that.dragIcon, draggable: true });
+            marker.on('dragstart', dragStartEvent);
+            marker.on('drag', dragEvent);
+            marker.on('dragend', dragEndEvent);
+            marker.addTo(that.map);
+            that.markerList.push(marker);
+            if (that.latlngList.length === 3) {
+                that.path = L.polygon(that.latlngList, { color: 'red' });
+                that.path.addTo(that.map);
+            } else if (that.latlngList.length > 3) {
+                that.path.setLatLngs(that.latlngList);
+            }
+        };
+        let doubleClickEvent = function (e) {
+            console.log('doubleClickEvent');
+            clickEvent(e);
+            that.okMarker = L.marker(e.latlng, { icon: that.okIcon });
+            that.cancelMarker = L.marker(e.latlng, { icon: that.cancelIcon });
+
+            that.okMarker.on('click', okClickEvent);
+            that.cancelMarker.on('click', cancelClickEvent);
+
+            that.okMarker.addTo(that.map);
+            that.cancelMarker.addTo(that.map);
+
+            that.map.off('click', clickEvent);
+            that.map.off('dblclick', doubleClickEvent);
+        };
+        that.map.on('click', clickEvent);
+        that.map.on('dblclick', doubleClickEvent);
     }
     drawCircle(latlng, radius) {
 
