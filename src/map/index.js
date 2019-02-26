@@ -147,6 +147,15 @@ export class Map {
         }
     }
     /**
+     * 移动地图到坐标
+     * @param {*} point 
+     */
+    panTo(point) {
+        if (typeof point === 'object') {
+            this.map.panTo(point);
+        }
+    }
+    /**
      * 移动地图到视野
      * @param {array} pointNW [lng,lat]
      * @param {array} pointSE [lng,lat]
@@ -154,6 +163,16 @@ export class Map {
     flyToBounds(pointNW, pointSE) {
         if (typeof pointNW === 'array' && typeof pointSE === 'array') {
             this.map.flyToBounds([pointNW, pointSE]);
+        }
+    }
+    /**
+     * 
+     * @param {*} pointNW 
+     * @param {*} pointSE 
+     */
+    fitBounds(pointNW, pointSE) {
+        if (typeof pointNW === 'array' && typeof pointSE === 'array') {
+            this.map.fitBounds([pointNW, pointSE]);
         }
     }
     /**
