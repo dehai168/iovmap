@@ -15,7 +15,8 @@
     <div style="border:1px solid red;margin-top: 10px;padding: 5px">
         <button onclick="initMap()">初始化地图</button>
         <button onclick="setZoom()">缩放地图</button>
-        <button onclick="flyTo()">移动地图</button>
+        <button onclick="flyTo()">移动地图fly</button>
+        <button onclick="panTo()">移动地图pan</button>
     </div>
     <div style="border:1px solid green;margin-top: 10px;padding: 5px">
         <button onclick="initMarker()">初始化marker</button>
@@ -55,6 +56,9 @@
         };
         let flyTo = function () {
             iovMap.flyTo([29.716608, 115.115005]);
+        };
+        let panTo = function () {
+            iovMap.panTo([29.716608, 115.115005]);
         };
         // Marker
         let initMarker = function () {
