@@ -51,6 +51,9 @@ export class Draw {
         });
         this.markerList = [];
         this.latlngList = [];
+        this.path = null;
+        this.tempPath = null;
+        this.tempLatlngList = [];
         this.cb = cb;
     }
     /**
@@ -105,14 +108,51 @@ export class Draw {
             that.map.on('click', clickEvent);
             that.map.on('dblclick', doubleClickEvent);
         };
+        let dragStartEvent = function (e) {
+            let dragIndex = that._markerListIndex(e.target);
+            that.tempLatlngList.length = 0;
+            if (dragIndex === 0) {
+                that.tempLatlngList.push(e.latlng);
+                that.tempLatlngList.push(that.markerList[++dragIndex].getLatLng());
+            }else if(dragIndex===that.markerList.length-1){
+                that.tempLatlngList.push(that.markerList[--dragIndex].getLatLng());
+                that.tempLatlngList.push(e.latlng);
+            }else{
+                that.tempLatlngList.push(that.markerList[--dragIndex].getLatLng());
+                that.tempLatlngList.push(e.latlng);
+                that.tempLatlngList.push(that.markerList[++dragIndex].getLatLng());
+            }
+            that.tempPath = L.polyline(that.tempLatlngList, { color: 'blue', dashArray: 5 });
+            that.tempPath.addTo(that.map);
+        };
+        let dragEvent = function (e) {
+            let dragIndex = that._markerListIndex(e.target);
+            if (dragIndex === 0) {
+                that.tempLatlngList[0] = e.latlng;
+            } else if (dragIndex === that.markerList.length - 1) {
+                that.tempLatlngList[1] = e.latlng;
+            } else {
+                that.tempLatlngList[1] = e.latlng;
+            }
+            that.tempPath.setLatLngs(that.tempLatlngList);
+        };
+        let dragEndEvent = function (e) {
+            let dragIndex = that._markerListIndex(e.target);
+            that.latlngList[dragIndex] = [e.latlng.lat, e.latlng.lng];
+            that.path.setLatLngs(that.latlngList);
+            that.tempPath.remove();
+        };
         let clickEvent = function (e) {
             that.latlngList.push([
                 e.latlng.lat,
                 e.latlng.lng,
             ]);
-            let marker = L.marker(e.latlng, { icon: that.dragIcon });
-            that.markerList.push(marker);
+            let marker = L.marker(e.latlng, { icon: that.dragIcon, draggable: true });
+            marker.on('dragstart', dragStartEvent);
+            marker.on('drag', dragEvent);
+            marker.on('dragend', dragEndEvent);
             marker.addTo(that.map);
+            that.markerList.push(marker);
             if (that.latlngList.length === 2) {
                 that.path = L.polyline(that.latlngList, { color: 'red' });
                 that.path.addTo(that.map);
@@ -151,11 +191,16 @@ export class Draw {
             let element = this.markerList.shift();
             element.remove();
         }
-        if(this.path){
+        if (this.path) {
             this.path.remove();
         }
         this.latlngList.length = 0;
         this.okMarker.remove();
         this.cancelMarker.remove();
+    }
+    _markerListIndex(obj) {
+        return this.markerList.findIndex((v, i, o) => {
+            return v === obj;
+        });
     }
 }
