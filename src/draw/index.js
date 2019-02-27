@@ -54,6 +54,7 @@ export class Draw {
         this.path = null;
         this.tempPath = null;
         this.tempLatlngList = [];
+        this.radius = 5000;
         this.cb = cb;
     }
     /**
@@ -332,8 +333,77 @@ export class Draw {
         that.map.on('click', clickEvent);
         that.map.on('dblclick', doubleClickEvent);
     }
+    /**
+     * 绘制圆形
+     * @param {*} latlng 
+     * @param {*} radius 
+     */
     drawCircle(latlng, radius) {
+        let that = this;
+        let okClickEvent = function (e) {
+            let temp = that.latlngList;
+            if (that.cb) {
+                that.cb(temp[0]);
+            }
+            that.remove();
+        };
+        let cancelClickEvent = function (e) {
+            that.remove();
+            that.map.on('click', clickEvent);
+        };
+        let dragEvent1 = function (e) {
+            let dragIndex = that._markerListIndex(e.target);
+            let latlng = that.markerList[dragIndex].getLatLng();
 
+            that.okMarker.setLatLng([latlng.lat, latlng.lng]);
+            that.cancelMarker.setLatLng([latlng.lat, latlng.lng]);
+            that.path.setLatLng([latlng.lat, latlng.lng]);
+
+            let bounds = that.path.getBounds();
+            let sw = bounds.getSouthWest();
+            let se = bounds.getSouthEast();
+            that.markerList[1].setLatLng([sw.lat, (se.lng + sw.lng) / 2]);
+        };
+        let dragEvent2 = function (e) {
+            let dragIndex = that._markerListIndex(e.target);
+            let latlng = that.markerList[0].getLatLng();
+            let latlng2 = that.markerList[dragIndex].getLatLng();
+            let radius = latlng.distanceTo(latlng2);
+            that.radius = radius;
+            that.path.setRadius(radius);
+        };
+        let clickEvent = function (e) {
+            that.latlngList.push([
+                e.latlng.lat,
+                e.latlng.lng,
+            ]);
+            let marker1 = L.marker(e.latlng, { icon: that.markerIcon, draggable: true });
+            marker1.on('drag', dragEvent1);
+            marker1.addTo(that.map);
+            that.markerList.push(marker1);
+            that.path = L.circle(that.latlngList[0], { radius: that.radius });
+            that.path.addTo(that.map);
+            let bounds = that.path.getBounds();
+            let sw = bounds.getSouthWest();
+            let se = bounds.getSouthEast();
+            let marker2 = L.marker([sw.lat, (se.lng + sw.lng) / 2], { icon: that.dragIcon, draggable: true });
+            marker2.on('drag', dragEvent2);
+            marker2.addTo(that.map);
+            that.markerList.push(marker2);
+
+            that.okMarker = L.marker(e.latlng, { icon: that.okIcon });
+            that.cancelMarker = L.marker(e.latlng, { icon: that.cancelIcon });
+
+            that.okMarker.on('click', okClickEvent);
+            that.cancelMarker.on('click', cancelClickEvent);
+
+            that.okMarker.addTo(that.map);
+            that.cancelMarker.addTo(that.map);
+
+            that.map.off('click', clickEvent);
+            that.map.setZoom(12);
+        };
+        that.map.on('click', clickEvent);
     }
     /**
      * 移除
