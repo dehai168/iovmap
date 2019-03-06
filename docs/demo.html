@@ -6,17 +6,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <script src="dist/iovmap.min.js"></script>
-    <script src="line.js"></script>
+    <script src="./dist/iovmap.min.js"></script>
+    <script src="./line.js"></script>
 </head>
 
 <body onload="initMap()">
     <div id="app" style="width: 600px; height: 400px;"></div>
     <div style="border:1px solid red;margin-top: 10px;padding: 5px">
-        <button onclick="initMap()">初始化地图</button>
+        <select name="" id="select_maptype">
+            <option value="BMap">百度地图</option>
+            <option value="BMap_Sate">百度卫星图</option>
+            <option value="BMap_Custom_midnight">百度暗夜样式图</option>
+            <option value="BMap_Custom_dark">百度黑夜样式图</option>
+            <option value="BMap_Custom_grayscale">百度灰色样式图</option>
+            <option value="GMap">谷歌地图</option>
+            <option value="GMap_Sate">谷歌卫星图</option>
+            <option value="AMap">高德地图</option>
+            <option value="AMap_Sate">高德卫星图</option>
+            <option value="SSMap">SOSO地图</option>
+        </select>
+        <!-- <button onclick="initMap()">初始化地图</button> -->
         <button onclick="setZoom()">缩放地图</button>
         <button onclick="flyTo()">移动地图fly</button>
         <button onclick="panTo()">移动地图pan</button>
+        <button onclick="changeMap()">切换地图</button>
     </div>
     <div style="border:1px solid green;margin-top: 10px;padding: 5px">
         <button onclick="initMarker()">初始化marker</button>
@@ -49,7 +62,8 @@
         let polyline = null;
         let draw = null;
         let initMap = function () {
-            iovMap = new IOVMap.Map('app', { type: 'BMap' });
+            const node = document.getElementById('select_maptype');
+            iovMap = new IOVMap.Map('app', { type: node.value });
         };
         let setZoom = function () {
             iovMap.setZoom(10);
@@ -59,6 +73,10 @@
         };
         let panTo = function () {
             iovMap.panTo([29.716608, 115.115005]);
+        };
+        let changeMap = function () {
+            const node = document.getElementById('select_maptype');
+            iovMap.changeMap(node.value);
         };
         // Marker
         let initMarker = function () {

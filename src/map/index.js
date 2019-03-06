@@ -243,11 +243,19 @@ export class Map {
      * 切换地图
      * @param {String} type? BMap/GMap/AMap
      */
-    _changeMap(type) {
+    changeMap(type) {
+        let center = this.map.getCenter();
+        let zoom = this.map.getZoom();
         let crs = this._getCRS(type.indexOf('BMap') > -1 ? 'BMap' : type);
+        if (crs !== null) {
+            this.map.options.crs = crs;
+        } else {
+            this.map.options.crs = L.CRS.EPSG3857;
+        }
         let mapLayer = this._getLayer(type);
         this.map.removeLayer(this.mapLayer);
         this.map.addLayer(mapLayer);
+        this.map.setView(center, zoom);
         this.mapLayer = mapLayer;
     }
     /**
