@@ -28,7 +28,7 @@ export class Map {
         let zoom = options.zoom ? options.zoom : 5;
         let center = options.center ? options.center : [34.161818, 106.523438];
         //地图部分
-        let crs = this._getCRS(type);
+        let crs = this._getCRS(type.indexOf('BMap') > -1 ? 'BMap' : type);
         this.mapLayer = this._getLayer(type);
         let option = {
             crs: crs, zoomControl: false
@@ -52,7 +52,55 @@ export class Map {
                         maxZoom: 18,
                         minZoom: 5,
                         subdomains: [0, 1, 2, 3],
-                        attribution: "ⓒ 2012 Daum",
+                        attribution: "ⓒ 2012 Baidu",
+                        tms: true
+                    }
+                );
+                break;
+            case 'BMap_Sate':
+                mapLayer = new L.tileLayer(
+                    "https://ss{s}.bdstatic.com/8bo_dTSlR1gBo1vgoIiO_jowehsv/starpic/?qt=satepc&u=x={x};y={y};z={z};v=009;type=sate&fm=46&app=webearth2&v=009&udt=20190305",
+                    {
+                        maxZoom: 18,
+                        minZoom: 5,
+                        subdomains: [0, 1, 2, 3],
+                        attribution: "ⓒ 2012 Baidu",
+                        tms: true
+                    }
+                );
+                break;
+            case 'BMap_Custom_midnight': //light,redalert,googlelite,grassgreen,pink,darkgreen,bluish,grayscale,hardedge
+                mapLayer = new L.tileLayer(
+                    "http://api{s}.map.bdimg.com/customimage/tile?&x={x}&y={y}&z={z}&udt=20190305&scale=1&customid=midnight",
+                    {
+                        maxZoom: 18,
+                        minZoom: 5,
+                        subdomains: [0, 1, 2],
+                        attribution: "ⓒ 2012 Baidu",
+                        tms: true
+                    }
+                );
+                break;
+            case 'BMap_Custom_dark':
+                mapLayer = new L.tileLayer(
+                    "http://api{s}.map.bdimg.com/customimage/tile?&x={x}&y={y}&z={z}&udt=20190305&scale=1&customid=dark",
+                    {
+                        maxZoom: 18,
+                        minZoom: 5,
+                        subdomains: [0, 1, 2],
+                        attribution: "ⓒ 2012 Baidu",
+                        tms: true
+                    }
+                );
+                break;
+            case 'BMap_Custom_grayscale':
+                mapLayer = new L.tileLayer(
+                    "http://api{s}.map.bdimg.com/customimage/tile?&x={x}&y={y}&z={z}&udt=20190305&scale=1&customid=grayscale",
+                    {
+                        maxZoom: 18,
+                        minZoom: 5,
+                        subdomains: [0, 1, 2],
+                        attribution: "ⓒ 2012 Baidu",
                         tms: true
                     }
                 );
@@ -61,7 +109,15 @@ export class Map {
                 mapLayer = new L.tileLayer('http://mt{s}.google.cn/vt/lyrs=m@160000000&hl=zh-CN&gl=CN&src=app&y={y}&x={x}&z={z}&s=Ga',
                     {
                         subdomains: [0, 1, 2, 3],
-                        attribution: '© <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+                        attribution: '© <a href="http://www.google.cn/maps">GoogleMap</a> contributors'
+                    }
+                );
+                break;
+            case "GMap_Sate":
+                mapLayer = new L.tileLayer('http://www.google.cn/maps/vt?lyrs=s@821&gl=cn&x={x}&y={y}&z={z}',
+                    {
+                        subdomains: [0, 1, 2, 3],
+                        attribution: '© <a href="http://www.google.cn/maps">GoogleMap</a> contributors'
                     }
                 );
                 break;
@@ -70,7 +126,7 @@ export class Map {
                     {
                         tms: true,
                         subdomains: [0, 1, 2, 3],
-                        attribution: '© <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+                        attribution: '© <a href="http://map.soso.com">SoSoMap</a> contributors'
                     }
                 );
                 break;
@@ -78,7 +134,15 @@ export class Map {
                 mapLayer = new L.tileLayer('http://webrd0{s}.is.autonavi.com/appmaptile?x={x}&y={y}&z={z}&lang=zh_cn&size=1&scale=1&style=8',
                     {
                         subdomains: [1, 2, 3, 4],
-                        attribution: '© <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+                        attribution: '© <a href="http://www.amap.cn">AMap</a> contributors'
+                    }
+                );
+                break;
+            case "AMap_Sate":
+                mapLayer = new L.tileLayer('https://webst0{s}.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}',
+                    {
+                        subdomains: [1, 2, 3, 4],
+                        attribution: '© <a href="http://www.amap.cn">AMap</a> contributors'
                     }
                 );
                 break;
@@ -180,7 +244,7 @@ export class Map {
      * @param {String} type? BMap/GMap/AMap
      */
     _changeMap(type) {
-        let crs = this._getCRS(type);
+        let crs = this._getCRS(type.indexOf('BMap') > -1 ? 'BMap' : type);
         let mapLayer = this._getLayer(type);
         this.map.removeLayer(this.mapLayer);
         this.map.addLayer(mapLayer);
