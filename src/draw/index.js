@@ -55,6 +55,7 @@ export class Draw {
         this.tempPath = null;
         this.tempLatlngList = [];
         this.radius = 5000;
+        this.dragged = false;
         this.cb = cb;
     }
     /**
@@ -135,8 +136,10 @@ export class Draw {
                 that.tempLatlngList[0] = latlng;
             } else if (dragIndex === that.markerList.length - 1) {
                 that.tempLatlngList[1] = latlng;
-                that.okMarker.setLatLng([latlng.lat, latlng.lng]);
-                that.cancelMarker.setLatLng([latlng.lat, latlng.lng]);
+                if (that.okMarker) {
+                    that.okMarker.setLatLng([latlng.lat, latlng.lng]);
+                    that.cancelMarker.setLatLng([latlng.lat, latlng.lng]);
+                }
             } else {
                 that.tempLatlngList[1] = latlng;
             }
@@ -148,8 +151,11 @@ export class Draw {
             that.latlngList[dragIndex] = [temp.lat, temp.lng];
             that.path.setLatLngs(that.latlngList);
             that.tempPath.remove();
+            that.dragged = true;
+            setTimeout(function () { that.dragged = false; }, 200);
         };
         let clickEvent = function (e) {
+            if (that.dragged) return;
             that.latlngList.push([
                 e.latlng.lat,
                 e.latlng.lng,
@@ -262,26 +268,20 @@ export class Draw {
             that.tempLatlngList.length = 0;
             let f = dragIndex === 0 ? (that.markerList.length - 1) : dragIndex - 1;
             let t = dragIndex === (that.markerList.length - 1) ? 0 : dragIndex + 1;
-            console.log(f + '|' + dragIndex + '|' + t + '|' + that.markerList.length);
-            that.tempLatlngList.push(that.markerList[f].getLatLng());
-            that.tempLatlngList.push(that.markerList[dragIndex].getLatLng());
             that.tempLatlngList.push(that.markerList[t].getLatLng());
+            that.tempLatlngList.push(that.markerList[dragIndex].getLatLng());
+            that.tempLatlngList.push(that.markerList[f].getLatLng());
+            if (that.tempPath) that.tempPath.remove();
             that.tempPath = L.polyline(that.tempLatlngList, { color: 'blue', dashArray: 5 });
             that.tempPath.addTo(that.map);
         };
         let dragEvent = function (e) {
             let dragIndex = that._markerListIndex(e.target);
             let latlng = that.markerList[dragIndex].getLatLng();
-            if (dragIndex === 0) {
-                that.tempLatlngList[0] = latlng;
-            } else if (dragIndex === that.markerList.length - 1) {
-                that.tempLatlngList[1] = latlng;
-                if (that.okMarker) {
-                    that.okMarker.setLatLng([latlng.lat, latlng.lng]);
-                    that.cancelMarker.setLatLng([latlng.lat, latlng.lng]);
-                }
-            } else {
-                that.tempLatlngList[1] = latlng;
+            that.tempLatlngList[1] = latlng;
+            if (that.okMarker) {
+                that.okMarker.setLatLng([latlng.lat, latlng.lng]);
+                that.cancelMarker.setLatLng([latlng.lat, latlng.lng]);
             }
             that.tempPath.setLatLngs(that.tempLatlngList);
         };
@@ -291,8 +291,11 @@ export class Draw {
             that.latlngList[dragIndex] = [temp.lat, temp.lng];
             that.path.setLatLngs(that.latlngList);
             that.tempPath.remove();
+            that.dragged = true;
+            setTimeout(function () { that.dragged = false; }, 200);
         };
         let clickEvent = function (e) {
+            if (that.dragged) return;
             if (that.latlngList.length > 0) {
                 if (that.latlngList[that.latlngList.length - 1] === [e.latlng.lat, e.latlng.lng]) {
                     return false;
@@ -316,7 +319,6 @@ export class Draw {
             }
         };
         let doubleClickEvent = function (e) {
-            console.log('doubleClickEvent');
             clickEvent(e);
             that.okMarker = L.marker(e.latlng, { icon: that.okIcon });
             that.cancelMarker = L.marker(e.latlng, { icon: that.cancelIcon });
@@ -343,7 +345,7 @@ export class Draw {
         let okClickEvent = function (e) {
             let temp = that.latlngList;
             if (that.cb) {
-                that.cb(temp[0]);
+                that.cb(temp[0],radius);
             }
             that.remove();
         };
@@ -381,7 +383,7 @@ export class Draw {
             marker1.on('drag', dragEvent1);
             marker1.addTo(that.map);
             that.markerList.push(marker1);
-            that.path = L.circle(that.latlngList[0], { radius: that.radius });
+            that.path = L.circle(e.latlng, { radius: that.radius });
             that.path.addTo(that.map);
             let bounds = that.path.getBounds();
             let sw = bounds.getSouthWest();
@@ -401,6 +403,7 @@ export class Draw {
             that.cancelMarker.addTo(that.map);
 
             that.map.off('click', clickEvent);
+            that.map.panTo(e.latlng);
             that.map.setZoom(12);
         };
         that.map.on('click', clickEvent);

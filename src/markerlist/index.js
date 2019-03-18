@@ -21,6 +21,8 @@ export class MarkerList {
         this.canvas = canvas;
         this.clickCB = cb;
         this.boundsList = [];
+        this.popup = null;
+        this.popupId = -1;
         this.ctx = canvas.getContext('2d');
         let that = this;
         this.drawEvent = function (e) {
@@ -51,7 +53,20 @@ export class MarkerList {
      * @param {*} htmlStr 
      */
     setPopupContent(htmlStr) {
-        this.popup.setContent(htmlStr);
+        if (this.popup !== null) {
+            this.popup.setContent(htmlStr);
+        }
+    }
+    /**
+     * 改变气泡位置
+     * @param {*} element 
+     */
+    _setPopupLatLng(element) {
+        if (element.id === this.popupId) {
+            if (this.popup !== null) {
+                this.popup.setLatLng([element.lat, element.lng]);
+            }
+        }
     }
     /**
      * 增加点击事件监听
@@ -65,10 +80,14 @@ export class MarkerList {
             that.boundsList.forEach(element => {
                 if (element.bounds.contains(point)) {
                     let latlng = that.map.containerPointToLatLng(point);
+                    if (that.popup !== null) {
+                        that.popup.remove();
+                    }
                     that.popup = L.popup()
-                        .setLatLng(latlng)
-                        .setContent('...加载中...')
-                        .openOn(that.map);
+                            .setLatLng(latlng)
+                            .setContent('...加载中...')
+                            .openOn(that.map);
+                    that.popupId = element.ele.id;
                     if (that.clickCB) {
                         that.clickCB(element.ele.id);
                     }
@@ -79,10 +98,10 @@ export class MarkerList {
     /**
      * 清理
      */
-    _clear(){
+    _clear() {
         let size = this.map.getSize();
         this.ctx.clearRect(0, 0, size.x, size.y);
-        this.boundsList.length=0;
+        this.boundsList.length = 0;
     }
     /**
      * 重绘
@@ -95,6 +114,7 @@ export class MarkerList {
                 that._drawArc(element);
                 that._drawText(element);
                 that.ctx.save();
+                that._setPopupLatLng(element);
             });
         }
     }

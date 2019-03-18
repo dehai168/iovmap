@@ -105,6 +105,7 @@
         let initMarkerList = function () {
             let canvas = iovMap.createCanvasPane();
             markerList = new IOVMap.MarkerList(iovMap.map, canvas, function (id) {
+                console.log(id);
                 let now = new Date();
                 markerList.setPopupContent(now.getTime() + "");
             });
