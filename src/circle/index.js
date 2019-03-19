@@ -173,7 +173,7 @@ export class Circle {
         marker1.on('drag', dragEvent1);
         marker1.addTo(that.map);
         that.dragMarkerList.push(marker1);
-        that.circle = L.circle(e.latlng, { radius: that.radius });
+        that.circle = L.circle(that.latlng, { radius: that.radius });
         that.circle.addTo(that.map);
         let bounds = that.circle.getBounds();
         let sw = bounds.getSouthWest();
@@ -183,15 +183,15 @@ export class Circle {
         marker2.addTo(that.map);
         that.dragMarkerList.push(marker2);
 
-        that.okMarker = L.marker(e.latlng, { icon: that.okIcon });
-        that.cancelMarker = L.marker(e.latlng, { icon: that.cancelIcon });
+        that.okMarker = L.marker(that.latlng, { icon: that.okIcon });
+        that.cancelMarker = L.marker(that.latlng, { icon: that.cancelIcon });
 
         that.okMarker.on('click', okClickEvent);
         that.cancelMarker.on('click', cancelClickEvent);
 
         that.okMarker.addTo(that.map);
         that.cancelMarker.addTo(that.map);
-        that.map.panTo(e.latlng);
+        that.map.panTo(that.latlng);
     }
     /**
      * 移除
@@ -204,6 +204,12 @@ export class Circle {
         }
         if (this.circle !== null) {
             this.circle.remove();
+        }
+        if (this.okMarker) {
+            this.okMarker.remove();
+        }
+        if (this.cancelMarker) {
+            this.cancelMarker.remove();
         }
     }
     _dragMarkerIndex(obj) {

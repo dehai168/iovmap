@@ -152,10 +152,10 @@ export class MarkerList {
     _drawText(element) {
         let point = this.map.latLngToLayerPoint([element.lat, element.lng]);
         point = this.map.layerPointToContainerPoint(point);
-        const width = 40;
-        const height = 10;
-        const x = point.x - width / 2;
-        const y = point.y - this.radius - height;
+        let width = 40;
+        let height = 10;
+        let x = point.x - width / 2;
+        let y = point.y - this.radius - height;
         //框部分2
         this.ctx.fillStyle = '#FFFFFF';
         this.ctx.fillRect(x, y, width, height);

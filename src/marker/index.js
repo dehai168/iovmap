@@ -55,7 +55,10 @@ export class Marker {
             that.map.on('click', clickEvent);
         };
         let dragEvent = function (e) {
-            that.latlng = e.target.getLatLng();
+            let latlng = e.target.getLatLng();
+            that.latlng = [latlng.lat, latlng.lng];
+            that.okMarker.setLatLng(latlng);
+            that.cancelMarker.setLatLng(latlng);
         };
         let clickEvent = function (e) {
             that.latlng = [e.latlng.lat, e.latlng.lng];
@@ -89,7 +92,10 @@ export class Marker {
             that.remove();
         };
         let dragEvent = function (e) {
-            that.latlng = e.target.getLatLng();
+            let latlng = e.target.getLatLng();
+            that.latlng = [latlng.lat, latlng.lng];
+            that.okMarker.setLatLng(latlng);
+            that.cancelMarker.setLatLng(latlng);
         };
         // 绘制marker
         that.marker = L.marker(that.latlng, { icon: that.markerIcon, draggable: true });
@@ -103,8 +109,6 @@ export class Marker {
         that.cancelMarker = L.marker(that.latlng, { icon: that.cancelIcon });
         that.cancelMarker.on('click', cancelClickEvent);
         that.cancelMarker.addTo(that.map);
-        // 注销事件
-        that.map.off('click', clickEvent);
     }
     /**
      * 加载
@@ -138,7 +142,7 @@ export class Marker {
      */
     change(imgPath, size, anchor) {
         if (imgPath) {
-            const myIcon = L.icon({
+            let myIcon = L.icon({
                 iconUrl: imgPath,
                 iconSize: size,
                 iconAnchor: anchor,

@@ -74,9 +74,9 @@ export class Polygon {
             that.map.on('click', clickEvent);
             that.map.on('dblclick', doubleClickEvent);
         };
-        const tempLatlngList = [];
-        const tempPolyline = null;
-        const dragIndex = -1;
+        let tempLatlngList = [];
+        let tempPolyline = null;
+        let dragIndex = -1;
         let dragStartEvent = function (e) {
             dragIndex = that._dragMarkerIndex(e.target);
             tempLatlngList.length = 0;
@@ -102,7 +102,7 @@ export class Polygon {
             let latlng = that.dragMarkerList[dragIndex].getLatLng();
             that.latlngs[dragIndex] = [latlng.lat, latlng.lng];
             that.polygon.setLatLngs(that.latlngs);
-            that.tempPolyline.remove();
+            tempPolyline.remove();
             that.dragged = true;
             setTimeout(function () { that.dragged = false; }, 200);
         };
@@ -155,6 +155,7 @@ export class Polygon {
     edit(latlngs, cb) {
         if (latlngs.length < 3) return;
         let that = this;
+        that.latlngs = latlngs;
         let okClickEvent = function (e) {
             if (cb) {
                 cb(that.latlngs);
@@ -164,9 +165,9 @@ export class Polygon {
         let cancelClickEvent = function (e) {
             that.remove();
         };
-        const tempLatlngList = [];
-        const tempPolyline = null;
-        const dragIndex = -1;
+        let tempLatlngList = [];
+        let tempPolyline = null;
+        let dragIndex = -1;
         let dragStartEvent = function (e) {
             dragIndex = that._dragMarkerIndex(e.target);
             tempLatlngList.length = 0;
@@ -192,50 +193,30 @@ export class Polygon {
             let latlng = that.dragMarkerList[dragIndex].getLatLng();
             that.latlngs[dragIndex] = [latlng.lat, latlng.lng];
             that.polygon.setLatLngs(that.latlngs);
-            that.tempPolyline.remove();
-            that.dragged = true;
-            setTimeout(function () { that.dragged = false; }, 200);
+            tempPolyline.remove();
         };
-        let clickEvent = function (e) {
-            if (that.dragged) return;
-            if (that.latlngs.length > 0) {
-                if (that.latlngs[that.latlngs.length - 1] === [e.latlng.lat, e.latlng.lng]) {
-                    return false;
-                }
-            }
-            that.latlngs.push([
-                e.latlng.lat,
-                e.latlng.lng,
-            ]);
-            let dragMarker = L.marker(e.latlng, { icon: that.dragIcon, draggable: true });
+        let i = 0;
+        that.latlngs.forEach(latlng => {
+            let dragMarker = L.marker(latlng, { icon: that.dragIcon, draggable: true });
             dragMarker.on('dragstart', dragStartEvent);
             dragMarker.on('drag', dragEvent);
             dragMarker.on('dragend', dragEndEvent);
             dragMarker.addTo(that.map);
             that.dragMarkerList.push(dragMarker);
-            if (that.latlngs.length === 3) {
-                that.polygon = L.polygon(that.latlngs, { color: 'red' });
-                that.polygon.addTo(that.map);
-            } else if (that.latlngs.length > 3) {
-                that.polygon.setLatLngs(that.latlngs);
+            if (i === that.latlngs.length - 1) {
+                that.okMarker = L.marker(latlng, { icon: that.okIcon });
+                that.cancelMarker = L.marker(latlng, { icon: that.cancelIcon });
+
+                that.okMarker.on('click', okClickEvent);
+                that.cancelMarker.on('click', cancelClickEvent);
+
+                that.okMarker.addTo(that.map);
+                that.cancelMarker.addTo(that.map);
             }
-        };
-        let doubleClickEvent = function (e) {
-            clickEvent(e);
-            that.okMarker = L.marker(e.latlng, { icon: that.okIcon });
-            that.cancelMarker = L.marker(e.latlng, { icon: that.cancelIcon });
-
-            that.okMarker.on('click', okClickEvent);
-            that.cancelMarker.on('click', cancelClickEvent);
-
-            that.okMarker.addTo(that.map);
-            that.cancelMarker.addTo(that.map);
-
-            that.map.off('click', clickEvent);
-            that.map.off('dblclick', doubleClickEvent);
-        };
-        that.map.on('click', clickEvent);
-        that.map.on('dblclick', doubleClickEvent);
+            i++;
+        });
+        that.polygon = L.polygon(that.latlngs, { color: 'red' });
+        that.polygon.addTo(that.map);
     }
     /**
      * 移除
@@ -248,6 +229,12 @@ export class Polygon {
         }
         if (this.polygon !== null) {
             this.polygon.remove();
+        }
+        if (this.okMarker) {
+            this.okMarker.remove();
+        }
+        if (this.cancelMarker) {
+            this.cancelMarker.remove();
         }
     }
     _dragMarkerIndex(obj) {

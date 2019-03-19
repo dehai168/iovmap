@@ -2,7 +2,9 @@ import { Map } from './src/map/index'
 import { Marker } from './src/marker/index'
 import { MarkerList } from "./src/markerlist/index";
 import { Polyline } from './src/polyline/index';
-import { Draw } from './src/draw/index';
+import { Rectangle } from './src/rectangle/index';
+import { Polygon } from './src/polygon/index';
+import { Circle } from './src/circle/index';
 
 import L from 'leaflet';
 import proj4leaflet from "proj4leaflet";
@@ -13,7 +15,9 @@ const IOVMap = {
     Marker,
     MarkerList,
     Polyline,
-    Draw,
+    Rectangle,
+    Polygon,
+    Circle,
 };
 export {
     IOVMap

@@ -74,7 +74,7 @@ export class Rectangle {
             that.map.on('click', clickEvent);
         };
         let dragEvent = function (e) {
-            let dragIndex = that._markerListIndex(e.target);
+            let dragIndex = that._dragMarkerIndex(e.target);
             let latlng = that.dragMarkerList[dragIndex].getLatLng();
             if (dragIndex === 0) {
                 that.latlngs[0] = [latlng.lat, latlng.lng];
@@ -130,7 +130,7 @@ export class Rectangle {
             that.remove();
         };
         let dragEvent = function (e) {
-            let dragIndex = that._markerListIndex(e.target);
+            let dragIndex = that._dragMarkerIndex(e.target);
             let latlng = that.dragMarkerList[dragIndex].getLatLng();
             if (dragIndex === 0) {
                 that.latlngs[0] = [latlng.lat, latlng.lng];
@@ -151,7 +151,7 @@ export class Rectangle {
         that.rectangle = L.rectangle(that.latlngs, { color: 'red' });
         that.rectangle.addTo(that.map);
 
-        const latlng = that.latlngs[1];
+        let latlng = that.latlngs[1];
         that.okMarker = L.marker(latlng, { icon: that.okIcon });
         that.cancelMarker = L.marker(latlng, { icon: that.cancelIcon });
 
@@ -172,6 +172,12 @@ export class Rectangle {
         }
         if (this.rectangle !== null) {
             this.rectangle.remove();
+        }
+        if (this.okMarker) {
+            this.okMarker.remove();
+        }
+        if (this.cancelMarker) {
+            this.cancelMarker.remove();
         }
     }
     _dragMarkerIndex(obj) {

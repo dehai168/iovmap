@@ -66,7 +66,7 @@ export class Polyline {
         let that = this;
         let _draw = function (latlngArray, color) {
             if (latlngArray.length > 0) {
-                const polyline = L.polyline(latlngArray, { color: color, weight: 5 });
+                let polyline = L.polyline(latlngArray, { color: color, weight: 5 });
                 polyline.addTo(that.map);
                 that.polylines.push(polyline);
             }
@@ -77,8 +77,8 @@ export class Polyline {
         let latlngArray = [];
         latlngArray.push([first.lat, first.lng]);
         for (let index = 1; index < trackArray.length; index++) {
-            const ele = trackArray[index];
-            const tempColor = that._getColor(ele.speed);
+            let ele = trackArray[index];
+            let tempColor = that._getColor(ele.speed);
             latlngArray.push([ele.lat, ele.lng]);
             if (color !== tempColor) {
                 latlngArray.push([ele.lat, ele.lng]);
@@ -107,9 +107,9 @@ export class Polyline {
             that.map.on('click', clickEvent);
             that.map.on('dblclick', doubleClickEvent);
         };
-        const tempLatlngList = [];
-        const tempPolyline = null;
-        const dragIndex = -1;
+        let tempLatlngList = [];
+        let tempPolyline = null;
+        let dragIndex = -1;
         let dragStartEvent = function (e) {
             dragIndex = that._dragMarkerIndex(e.target);
             tempLatlngList.length = 0;
@@ -205,9 +205,9 @@ export class Polyline {
         let cancelClickEvent = function (e) {
             that.remove();
         };
-        const tempLatlngList = [];
-        const tempPolyline = null;
-        const dragIndex = -1;
+        let tempLatlngList = [];
+        let tempPolyline = null;
+        let dragIndex = -1;
         let dragStartEvent = function (e) {
             dragIndex = that._dragMarkerIndex(e.target);
             tempLatlngList.length = 0;
@@ -249,10 +249,8 @@ export class Polyline {
             that.latlngs[dragIndex] = [latlng.lat, latlng.lng];
             that.polyline.setLatLngs(that.latlngs);
             tempPolyline.remove();
-            that.dragged = true;
-            setTimeout(function () { that.dragged = false; }, 200);
         };
-        const i = 0;
+        let i = 0;
         that.latlngs.forEach(element => {
             let latlng = [element[0], element[1]];
             let dragMarker = L.marker(latlng, { icon: that.dragIcon, draggable: true });
@@ -274,6 +272,7 @@ export class Polyline {
             i++;
         });
         that.polyline = L.polyline(that.latlngs, { color: 'red' });
+        that.polyline.addTo(that.map);
     }
     /**
      * 移除
@@ -290,6 +289,12 @@ export class Polyline {
         }
         if (this.polyline !== null) {
             this.polyline.remove();
+        }
+        if (this.okMarker) {
+            this.okMarker.remove();
+        }
+        if (this.cancelMarker) {
+            this.cancelMarker.remove();
         }
     }
     /**

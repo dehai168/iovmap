@@ -51,19 +51,19 @@
         <button onclick="polyline_loadTrack()">加载轨迹polyline</button>
         <button onclick="polyline_remove()">移除polyline</button>
     </div>
-    <div style="border:1px solid yellow;margin-top: 10px;padding: 5px">
+    <div style="border:1px solid blue;margin-top: 10px;padding: 5px">
         <button onclick="rectangle_draw()">绘制rectangle</button>
         <button onclick="rectangle_load()">加载rectangle</button>
         <button onclick="rectangle_edit()">编辑rectangle</button>
         <button onclick="rectangle_remove()">移除rectangle</button>
     </div>
-    <div style="border:1px solid yellow;margin-top: 10px;padding: 5px">
+    <div style="border:1px solid brown;margin-top: 10px;padding: 5px">
         <button onclick="polygon_draw()">绘制polygon</button>
         <button onclick="polygon_load()">加载polygon</button>
         <button onclick="polygon_edit()">编辑polygon</button>
         <button onclick="polygon_remove()">移除polygon</button>
     </div>
-    <div style="border:1px solid yellow;margin-top: 10px;padding: 5px">
+    <div style="border:1px solid palevioletred;margin-top: 10px;padding: 5px">
         <button onclick="circle_draw()">绘制circle</button>
         <button onclick="circle_load()">加载circle</button>
         <button onclick="circle_edit()">编辑circle</button>
@@ -72,7 +72,7 @@
     <script>
         let iovMap = null;
         let initMap = function () {
-            const node = document.getElementById('select_maptype');
+            let node = document.getElementById('select_maptype');
             iovMap = new IOVMap.Map('app', { type: node.value });
         };
         let setZoom = function () {
@@ -85,11 +85,11 @@
             iovMap.panTo([29.716608, 115.115005]);
         };
         let changeMap = function () {
-            const node = document.getElementById('select_maptype');
+            let node = document.getElementById('select_maptype');
             iovMap.changeMap(node.value);
         };
         // Marker
-        const iovMarker = null;
+        let iovMarker = null;
         let marker_draw = function () {
             iovMarker = new IOVMap.Marker(iovMap.map);
             iovMarker.draw(function (latlngs) {
@@ -164,20 +164,97 @@
             });
         };
         let polyline_load = function () {
+            let latlngs = getLatlngsFromLine();
             iovPolyline = new IOVMap.Polyline(iovMap.map);
-            iovPolyline.load(line);
+            iovPolyline.load(latlngs);
         };
         let polyline_loadTrack = function () {
             iovPolyline = new IOVMap.Polyline(iovMap.map);
             iovPolyline.loadTrack(line);
         };
         let polyline_edit = function () {
+            let latlngs = getLatlngsFromLine();
             iovPolyline = new IOVMap.Polyline(iovMap.map);
-            iovPolyline.edit(line);
+            iovPolyline.edit(latlngs);
         };
         let polyline_remove = function () {
             iovPolyline.remove();
         };
+        //polygon
+        let iovPolygon = null;
+        let polygon_draw = function () {
+            iovPolygon = new IOVMap.Polygon(iovMap.map);
+            iovPolygon.draw(function (v) {
+                console.log(v);
+            });
+        };
+        let polygon_load = function () {
+            let latlngs = getLatlngsFromLine();
+            iovPolygon = new IOVMap.Polygon(iovMap.map);
+            iovPolygon.load(latlngs);
+        };
+        let polygon_edit = function () {
+            let latlngs = getLatlngsFromLine();
+            iovPolygon = new IOVMap.Polygon(iovMap.map);
+            iovPolygon.edit(latlngs);
+        };
+        let polygon_remove = function () {
+            iovPolygon.remove();
+        };
+        //rectangle
+        let iovRectangle = null;
+        let rectangle_draw = function () {
+            iovRectangle = new IOVMap.Rectangle(iovMap.map);
+            iovRectangle.draw(function (v) {
+                console.log(v);
+            });
+        };
+        let rectangle_load = function () {
+            let start = [line[0].lat, line[0].lng];
+            let end = [line[line.length - 1].lat, line[line.length - 1].lng];
+            iovRectangle = new IOVMap.Rectangle(iovMap.map);
+            iovRectangle.load([start, end]);
+        };
+        let rectangle_edit = function () {
+            let start = [line[0].lat, line[0].lng];
+            let end = [line[line.length - 1].lat, line[line.length - 1].lng];
+            iovRectangle = new IOVMap.Rectangle(iovMap.map);
+            iovRectangle.edit([start, end]);
+        };
+        let rectangle_remove = function () {
+            iovRectangle.remove();
+        };
+        //circle
+        let iovCircle = null;
+        let circle_draw = function () {
+            iovCircle = new IOVMap.Circle(iovMap.map);
+            iovCircle.draw(function (v, r) {
+                console.log(v + ',' + r);
+            });
+        };
+        let circle_load = function () {
+            let start = [line[0].lat, line[0].lng];
+            let radius = 4000;
+            iovCircle = new IOVMap.Circle(iovMap.map);
+            iovCircle.load(start, radius);
+        };
+        let circle_edit = function () {
+            let start = [line[0].lat, line[0].lng];
+            let radius = 4000;
+            iovCircle = new IOVMap.Circle(iovMap.map);
+            iovCircle.edit(start, radius);
+        };
+        let circle_remove = function () {
+            iovCircle.remove();
+        };
+        //从线路获取经纬度列表
+        let getLatlngsFromLine = function () {
+            let result = [];
+            line.forEach(element => {
+                result.push([element.lat, element.lng]);
+            });
+            return result;
+        }
     </script>
 </body>
 
