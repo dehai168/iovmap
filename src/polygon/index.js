@@ -19,12 +19,11 @@ import ok from "../assets/ok.png";
 import cancel from "../assets/cancel.png";
 import polygon from "../assets/polygon.png";
 
-export class Polyline {
+export class Polygon {
     constructor(map) {
         this.map = map;
         this.latlngs = [];
-        this.polyline = null;
-        this.polylines = [];
+        this.polygon = null;
         this.dragMarkerList = [];
 
         this.okIcon = L.icon({
@@ -51,44 +50,12 @@ export class Polyline {
     load(latlngs, option) {
         if (latlngs.length > 0) {
             if (option) {
-                this.polyline = L.polyline(latlngs, { color: option.color, weight: option.weight });
+                this.polygon = L.polygon(latlngs, { color: option.color, weight: option.weight });
             } else {
-                this.polyline = L.polyline(latlngs);
+                this.polygon = L.polygon(latlngs);
             }
-            this.polyline.addTo(this.map);
+            this.polygon.addTo(this.map);
         }
-    }
-    /**
-     * 加载多媒体轨迹
-     * @param {*} trackArray 
-     */
-    loadTrack(trackArray) {
-        let that = this;
-        let _draw = function (latlngArray, color) {
-            if (latlngArray.length > 0) {
-                const polyline = L.polyline(latlngArray, { color: color, weight: 5 });
-                polyline.addTo(that.map);
-                that.polylines.push(polyline);
-            }
-        };
-        if (trackArray.length < 2) return;
-        let first = trackArray[0];
-        let color = that._getColor(first.speed);
-        let latlngArray = [];
-        latlngArray.push([first.lat, first.lng]);
-        for (let index = 1; index < trackArray.length; index++) {
-            const ele = trackArray[index];
-            const tempColor = that._getColor(ele.speed);
-            latlngArray.push([ele.lat, ele.lng]);
-            if (color !== tempColor) {
-                latlngArray.push([ele.lat, ele.lng]);
-                _draw(latlngArray, color);
-                latlngArray.length = 0;
-                color = tempColor;
-                index = index - 1;
-            }
-        }
-        _draw(latlngArray, color);
     }
     /**
      * 绘制
@@ -113,48 +80,39 @@ export class Polyline {
         let dragStartEvent = function (e) {
             dragIndex = that._dragMarkerIndex(e.target);
             tempLatlngList.length = 0;
-            if (dragIndex === 0) {
-                tempLatlngList.push(that.dragMarkerList[0].getLatLng());
-                tempLatlngList.push(that.dragMarkerList[1].getLatLng());
-            } else if (dragIndex === that.dragMarkerList.length - 1) {
-                let f = dragIndex - 1;
-                tempLatlngList.push(that.dragMarkerList[f].getLatLng());
-                tempLatlngList.push(that.dragMarkerList[dragIndex].getLatLng());
-            } else {
-                let f = dragIndex - 1;
-                let t = dragIndex + 1;
-                tempLatlngList.push(that.dragMarkerList[f].getLatLng());
-                tempLatlngList.push(that.dragMarkerList[dragIndex].getLatLng());
-                tempLatlngList.push(that.dragMarkerList[t].getLatLng());
-            }
+            let f = dragIndex === 0 ? (that.dragMarkerList.length - 1) : dragIndex - 1;
+            let t = dragIndex === (that.dragMarkerList.length - 1) ? 0 : dragIndex + 1;
+            tempLatlngList.push(that.dragMarkerList[t].getLatLng());
+            tempLatlngList.push(that.dragMarkerList[dragIndex].getLatLng());
+            tempLatlngList.push(that.dragMarkerList[f].getLatLng());
+            if (tempPolyline) tempPolyline.remove();
             tempPolyline = L.polyline(tempLatlngList, { color: 'blue', dashArray: 5 });
             tempPolyline.addTo(that.map);
         };
         let dragEvent = function (e) {
             let latlng = that.dragMarkerList[dragIndex].getLatLng();
-            if (dragIndex === 0) {
-                tempLatlngList[0] = latlng;
-            } else if (dragIndex === that.dragMarkerList.length - 1) {
-                tempLatlngList[1] = latlng;
-                if (that.okMarker) {
-                    that.okMarker.setLatLng(latlng);
-                    that.cancelMarker.setLatLng(latlng);
-                }
-            } else {
-                tempLatlngList[1] = latlng;
+            tempLatlngList[1] = latlng;
+            if (that.okMarker) {
+                that.okMarker.setLatLng(latlng);
+                that.cancelMarker.setLatLng(latlng);
             }
             tempPolyline.setLatLngs(tempLatlngList);
         };
         let dragEndEvent = function (e) {
             let latlng = that.dragMarkerList[dragIndex].getLatLng();
-            tempPolyline.remove();
             that.latlngs[dragIndex] = [latlng.lat, latlng.lng];
-            that.polyline.setLatLngs(that.latlngs);
+            that.polygon.setLatLngs(that.latlngs);
+            that.tempPolyline.remove();
             that.dragged = true;
             setTimeout(function () { that.dragged = false; }, 200);
         };
         let clickEvent = function (e) {
             if (that.dragged) return;
+            if (that.latlngs.length > 0) {
+                if (that.latlngs[that.latlngs.length - 1] === [e.latlng.lat, e.latlng.lng]) {
+                    return false;
+                }
+            }
             that.latlngs.push([
                 e.latlng.lat,
                 e.latlng.lng,
@@ -165,11 +123,11 @@ export class Polyline {
             dragMarker.on('dragend', dragEndEvent);
             dragMarker.addTo(that.map);
             that.dragMarkerList.push(dragMarker);
-            if (that.latlngs.length === 2) {
-                that.polyline = L.polyline(that.latlngs, { color: 'red' });
-                that.polyline.addTo(that.map);
-            } else if (that.latlngs.length > 2) {
-                that.polyline.setLatLngs(that.latlngs);
+            if (that.latlngs.length === 3) {
+                that.polygon = L.polygon(that.latlngs, { color: 'red' });
+                that.polygon.addTo(that.map);
+            } else if (that.latlngs.length > 3) {
+                that.polygon.setLatLngs(that.latlngs);
             }
         };
         let doubleClickEvent = function (e) {
@@ -191,11 +149,12 @@ export class Polyline {
     }
     /**
      * 编辑
+     * @param {*} latlngs 
+     * @param {*} cb 
      */
     edit(latlngs, cb) {
-        if (latlngs.length < 2) return;
+        if (latlngs.length < 3) return;
         let that = this;
-        that.latlngs = latlngs;
         let okClickEvent = function (e) {
             if (cb) {
                 cb(that.latlngs);
@@ -211,98 +170,84 @@ export class Polyline {
         let dragStartEvent = function (e) {
             dragIndex = that._dragMarkerIndex(e.target);
             tempLatlngList.length = 0;
-            if (dragIndex === 0) {
-                tempLatlngList.push(that.dragMarkerList[0].getLatLng());
-                tempLatlngList.push(that.dragMarkerList[1].getLatLng());
-            } else if (dragIndex === that.dragMarkerList.length - 1) {
-                let f = dragIndex - 1;
-                tempLatlngList.push(that.dragMarkerList[f].getLatLng());
-                tempLatlngList.push(that.dragMarkerList[dragIndex].getLatLng());
-            } else {
-                let f = dragIndex - 1;
-                let t = dragIndex + 1;
-                tempLatlngList.push(that.dragMarkerList[f].getLatLng());
-                tempLatlngList.push(that.dragMarkerList[dragIndex].getLatLng());
-                tempLatlngList.push(that.dragMarkerList[t].getLatLng());
-            }
+            let f = dragIndex === 0 ? (that.dragMarkerList.length - 1) : dragIndex - 1;
+            let t = dragIndex === (that.dragMarkerList.length - 1) ? 0 : dragIndex + 1;
+            tempLatlngList.push(that.dragMarkerList[t].getLatLng());
+            tempLatlngList.push(that.dragMarkerList[dragIndex].getLatLng());
+            tempLatlngList.push(that.dragMarkerList[f].getLatLng());
             if (tempPolyline) tempPolyline.remove();
             tempPolyline = L.polyline(tempLatlngList, { color: 'blue', dashArray: 5 });
             tempPolyline.addTo(that.map);
         };
         let dragEvent = function (e) {
             let latlng = that.dragMarkerList[dragIndex].getLatLng();
-            if (dragIndex === 0) {
-                tempLatlngList[0] = latlng;
-            } else if (dragIndex === that.dragMarkerList.length - 1) {
-                tempLatlngList[1] = latlng;
-                if (that.okMarker) {
-                    that.okMarker.setLatLng(latlng);
-                    that.cancelMarker.setLatLng(latlng);
-                }
-            } else {
-                tempLatlngList[1] = latlng;
+            tempLatlngList[1] = latlng;
+            if (that.okMarker) {
+                that.okMarker.setLatLng(latlng);
+                that.cancelMarker.setLatLng(latlng);
             }
             tempPolyline.setLatLngs(tempLatlngList);
         };
         let dragEndEvent = function (e) {
             let latlng = that.dragMarkerList[dragIndex].getLatLng();
             that.latlngs[dragIndex] = [latlng.lat, latlng.lng];
-            that.polyline.setLatLngs(that.latlngs);
-            tempPolyline.remove();
+            that.polygon.setLatLngs(that.latlngs);
+            that.tempPolyline.remove();
             that.dragged = true;
             setTimeout(function () { that.dragged = false; }, 200);
         };
-        const i = 0;
-        that.latlngs.forEach(element => {
-            let latlng = [element[0], element[1]];
-            let dragMarker = L.marker(latlng, { icon: that.dragIcon, draggable: true });
+        let clickEvent = function (e) {
+            if (that.dragged) return;
+            if (that.latlngs.length > 0) {
+                if (that.latlngs[that.latlngs.length - 1] === [e.latlng.lat, e.latlng.lng]) {
+                    return false;
+                }
+            }
+            that.latlngs.push([
+                e.latlng.lat,
+                e.latlng.lng,
+            ]);
+            let dragMarker = L.marker(e.latlng, { icon: that.dragIcon, draggable: true });
             dragMarker.on('dragstart', dragStartEvent);
             dragMarker.on('drag', dragEvent);
             dragMarker.on('dragend', dragEndEvent);
             dragMarker.addTo(that.map);
             that.dragMarkerList.push(dragMarker);
-            if (i === that.latlngs.length - 1) {
-                that.okMarker = L.marker(latlng, { icon: that.okIcon });
-                that.cancelMarker = L.marker(latlng, { icon: that.cancelIcon });
-
-                that.okMarker.on('click', okClickEvent);
-                that.cancelMarker.on('click', cancelClickEvent);
-
-                that.okMarker.addTo(that.map);
-                that.cancelMarker.addTo(that.map);
+            if (that.latlngs.length === 3) {
+                that.polygon = L.polygon(that.latlngs, { color: 'red' });
+                that.polygon.addTo(that.map);
+            } else if (that.latlngs.length > 3) {
+                that.polygon.setLatLngs(that.latlngs);
             }
-            i++;
-        });
-        that.polyline = L.polyline(that.latlngs, { color: 'red' });
+        };
+        let doubleClickEvent = function (e) {
+            clickEvent(e);
+            that.okMarker = L.marker(e.latlng, { icon: that.okIcon });
+            that.cancelMarker = L.marker(e.latlng, { icon: that.cancelIcon });
+
+            that.okMarker.on('click', okClickEvent);
+            that.cancelMarker.on('click', cancelClickEvent);
+
+            that.okMarker.addTo(that.map);
+            that.cancelMarker.addTo(that.map);
+
+            that.map.off('click', clickEvent);
+            that.map.off('dblclick', doubleClickEvent);
+        };
+        that.map.on('click', clickEvent);
+        that.map.on('dblclick', doubleClickEvent);
     }
     /**
      * 移除
      */
     remove() {
         this.latlngs.length = 0;
-        while (this.polylines.length > 0) {
-            let element = this.polylines.shift();
-            element.remove();
-        }
         while (this.dragMarkerList.length > 0) {
             let element = this.dragMarkerList.shift();
             element.remove();
         }
-        if (this.polyline !== null) {
-            this.polyline.remove();
-        }
-    }
-    /**
-     * 获取颜色
-     * @param {number} speed 
-     */
-    _getColor(speed) {
-        if (speed <= 60) {
-            return '#228B22';
-        } else if (speed <= 80) {
-            return '#FF8C00';
-        } else {
-            return '#FF0000';
+        if (this.polygon !== null) {
+            this.polygon.remove();
         }
     }
     _dragMarkerIndex(obj) {

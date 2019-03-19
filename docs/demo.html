@@ -32,10 +32,12 @@
         <button onclick="changeMap()">切换地图</button>
     </div>
     <div style="border:1px solid green;margin-top: 10px;padding: 5px">
-        <button onclick="initMarker()">初始化marker</button>
-        <button onclick="change()">改变marker外形</button>
-        <button onclick="moveTo()">移动marker</button>
-        <button onclick="removeMarker()">移除marker</button>
+        <button onclick="marker_draw()">绘制marker</button>
+        <button onclick="marker_load()">加载marker</button>
+        <button onclick="marker_edit()">编辑marker</button>
+        <button onclick="marker_change()">改变marker外形</button>
+        <button onclick="marker_moveTo()">移动marker</button>
+        <button onclick="marker_remove()">移除marker</button>
     </div>
     <div style="border:1px solid gray;margin-top: 10px;padding: 5px">
         <button onclick="initMarkerList()">初始化markerList</button>
@@ -43,24 +45,32 @@
         <button onclick="removeMarkerList()">移除</button>
     </div>
     <div style="border:1px solid yellow;margin-top: 10px;padding: 5px">
-        <button onclick="initPolyline()">初始化polyline</button>
-        <button onclick="remove()">移除polyline</button>
+        <button onclick="polyline_draw()">绘制polyline</button>
+        <button onclick="polyline_load()">加载polyline</button>
+        <button onclick="polyline_edit()">编辑polyline</button>
+        <button onclick="polyline_loadTrack()">加载轨迹polyline</button>
+        <button onclick="polyline_remove()">移除polyline</button>
     </div>
-    <div style="border:1px solid lightcoral;margin-top: 10px;padding: 5px">
-        <button onclick="initDraw()">初始化draw</button>
-        <button onclick="drawMarker()">画标记</button>
-        <button onclick="drawPolyline()">画曲线</button>
-        <button onclick="drawRectangle()">画矩形</button>
-        <button onclick="drawPolygon()">画多边形</button>
-        <button onclick="drawCircle()">画圆形</button>
-        <button onclick="removeDraw()">移除draw</button>
+    <div style="border:1px solid yellow;margin-top: 10px;padding: 5px">
+        <button onclick="rectangle_draw()">绘制rectangle</button>
+        <button onclick="rectangle_load()">加载rectangle</button>
+        <button onclick="rectangle_edit()">编辑rectangle</button>
+        <button onclick="rectangle_remove()">移除rectangle</button>
+    </div>
+    <div style="border:1px solid yellow;margin-top: 10px;padding: 5px">
+        <button onclick="polygon_draw()">绘制polygon</button>
+        <button onclick="polygon_load()">加载polygon</button>
+        <button onclick="polygon_edit()">编辑polygon</button>
+        <button onclick="polygon_remove()">移除polygon</button>
+    </div>
+    <div style="border:1px solid yellow;margin-top: 10px;padding: 5px">
+        <button onclick="circle_draw()">绘制circle</button>
+        <button onclick="circle_load()">加载circle</button>
+        <button onclick="circle_edit()">编辑circle</button>
+        <button onclick="circle_remove()">移除circle</button>
     </div>
     <script>
         let iovMap = null;
-        let iovMarker = null;
-        let markerList = null;
-        let polyline = null;
-        let draw = null;
         let initMap = function () {
             const node = document.getElementById('select_maptype');
             iovMap = new IOVMap.Map('app', { type: node.value });
@@ -79,26 +89,33 @@
             iovMap.changeMap(node.value);
         };
         // Marker
-        let initMarker = function () {
+        const iovMarker = null;
+        let marker_draw = function () {
+            iovMarker = new IOVMap.Marker(iovMap.map);
+            iovMarker.draw(function (latlngs) {
+                console.log(latlngs);
+            });
+        }
+        let marker_load = function () {
             let start = line[0];
-            iovMarker = new IOVMap.Marker(iovMap.map, start.lat, start.lng, './assets/images/circle_blue_16_ns.png', [16, 16], [8, 8], '异常停车点');
+            iovMarker = new IOVMap.Marker(iovMap.map);
+            iovMarker.load(start.lat, start.lng, './assets/images/circle_blue_16_ns.png', [16, 16], [8, 8], '异常停车点');
         };
-        let change = function () {
+        let marker_edit = function () {
+            let start = line[50];
+            iovMarker = new IOVMap.Marker(iovMap.map);
+            iovMarker.edit(start.lat, start.lng, function (v) {
+                console.log(v);
+            });
+        };
+        let marker_change = function () {
             iovMarker.change('./assets/images/circle_black_16_ns.png');
         };
-        let moveTo = function () {
-            let index = 0;
-            window.setInterval(function () {
-                if (index < line.length) {
-                    let temp = line[index];
-                    iovMarker.moveTo(temp.lat, temp.lng);
-                } else {
-                    index = 0;
-                }
-                index++;
-            }, 1000);
+        let marker_moveTo = function () {
+            let end = line[line.length - 1];
+            iovMarker.moveTo(end.lat, end.lng);
         };
-        let removeMarker = function () {
+        let marker_remove = function () {
             iovMarker.remove();
         }
         // markerList
@@ -139,35 +156,27 @@
             markerList.remove();
         };
         //polyline
-        let initPolyline = function () {
-            polyline = new IOVMap.Polyline(iovMap.map, line);
-        };
-        let remove = function () {
-            polyline.remove();
-        };
-        // draw
-        let initDraw = function () {
-            draw = new IOVMap.Draw(iovMap.map, function (latlng) {
-                console.log(latlng);
+        let iovPolyline = null;
+        let polyline_draw = function () {
+            iovPolyline = new IOVMap.Polyline(iovMap.map);
+            iovPolyline.draw(function (v) {
+                console.log(v);
             });
         };
-        let drawMarker = function () {
-            draw.drawMarker();
-        }
-        let drawPolyline = function () {
-            draw.drawPolyline();
+        let polyline_load = function () {
+            iovPolyline = new IOVMap.Polyline(iovMap.map);
+            iovPolyline.load(line);
         };
-        let drawRectangle = function () {
-            draw.drawRectangle();
+        let polyline_loadTrack = function () {
+            iovPolyline = new IOVMap.Polyline(iovMap.map);
+            iovPolyline.loadTrack(line);
         };
-        let drawPolygon = function () {
-            draw.drawPolygon();
+        let polyline_edit = function () {
+            iovPolyline = new IOVMap.Polyline(iovMap.map);
+            iovPolyline.edit(line);
         };
-        let drawCircle = function () {
-            draw.drawCircle();
-        };
-        let removeDraw = function () {
-            draw.remove();
+        let polyline_remove = function () {
+            iovPolyline.remove();
         };
     </script>
 </body>
