@@ -72,7 +72,7 @@ export class Circle {
         let that = this;
         let okClickEvent = function (e) {
             if (cb) {
-                cb(that.latlng, that.radius);
+                cb(that.latlng, that.radius.toFixed(2));
             }
             that.remove();
         };
@@ -142,7 +142,7 @@ export class Circle {
         that.radius = radius;
         let okClickEvent = function (e) {
             if (cb) {
-                cb(that.latlng, that.radius);
+                cb(that.latlng, that.radius.toFixed(2));
             }
             that.remove();
         };

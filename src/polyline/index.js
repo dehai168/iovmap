@@ -155,6 +155,7 @@ export class Polyline {
         };
         let clickEvent = function (e) {
             if (that.dragged) return;
+            if (that.dbclicked) return;
             that.latlngs.push([
                 e.latlng.lat,
                 e.latlng.lng,
@@ -173,7 +174,9 @@ export class Polyline {
             }
         };
         let doubleClickEvent = function (e) {
-            clickEvent(e);
+            that.dbclicked = true;
+            setTimeout(function () { that.dbclicked = false; }, 200);
+            
             that.okMarker = L.marker(e.latlng, { icon: that.okIcon });
             that.cancelMarker = L.marker(e.latlng, { icon: that.cancelIcon });
 
@@ -185,6 +188,8 @@ export class Polyline {
 
             that.map.off('click', clickEvent);
             that.map.off('dblclick', doubleClickEvent);
+
+            
         };
         that.map.on('click', clickEvent);
         that.map.on('dblclick', doubleClickEvent);

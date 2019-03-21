@@ -131,7 +131,7 @@ export class Polygon {
             }
         };
         let doubleClickEvent = function (e) {
-            clickEvent(e);
+            // clickEvent(e);
             that.okMarker = L.marker(e.latlng, { icon: that.okIcon });
             that.cancelMarker = L.marker(e.latlng, { icon: that.cancelIcon });
 

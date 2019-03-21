@@ -225,7 +225,7 @@ export class Map {
      * @param {array} pointSE [lng,lat]
      */
     flyToBounds(pointNW, pointSE) {
-        if (typeof pointNW === 'array' && typeof pointSE === 'array') {
+        if (typeof pointNW === 'object' && typeof pointSE === 'object') {
             this.map.flyToBounds([pointNW, pointSE]);
         }
     }
@@ -235,7 +235,7 @@ export class Map {
      * @param {*} pointSE 
      */
     fitBounds(pointNW, pointSE) {
-        if (typeof pointNW === 'array' && typeof pointSE === 'array') {
+        if (typeof pointNW === 'object' && typeof pointSE === 'object') {
             this.map.fitBounds([pointNW, pointSE]);
         }
     }

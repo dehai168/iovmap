@@ -29,6 +29,9 @@
         <button onclick="setZoom()">缩放地图</button>
         <button onclick="flyTo()">移动地图fly</button>
         <button onclick="panTo()">移动地图pan</button>
+        <button onclick="panTo()">移动地图pan</button>
+        <button onclick="flyToBounds()">地图视野fly</button>
+        <button onclick="fitBounds()">地图视野pan</button>
         <button onclick="changeMap()">切换地图</button>
     </div>
     <div style="border:1px solid green;margin-top: 10px;padding: 5px">
@@ -83,6 +86,16 @@
         };
         let panTo = function () {
             iovMap.panTo([29.716608, 115.115005]);
+        };
+        let flyToBounds=function(){
+            let start = [line[0].lat, line[0].lng];
+            let end = [line[line.length - 1].lat, line[line.length - 1].lng];
+            iovMap.flyToBounds(start,end);
+        };
+        let fitBounds=function(){
+            let start = [line[0].lat, line[0].lng];
+            let end = [line[line.length - 1].lat, line[line.length - 1].lng];
+            iovMap.fitBounds(start,end);
         };
         let changeMap = function () {
             let node = document.getElementById('select_maptype');
@@ -175,7 +188,9 @@
         let polyline_edit = function () {
             let latlngs = getLatlngsFromLine();
             iovPolyline = new IOVMap.Polyline(iovMap.map);
-            iovPolyline.edit(latlngs);
+            iovPolyline.edit(latlngs, function (v) {
+                console.log(v);
+            });
         };
         let polyline_remove = function () {
             iovPolyline.remove();
@@ -196,7 +211,9 @@
         let polygon_edit = function () {
             let latlngs = getLatlngsFromLine();
             iovPolygon = new IOVMap.Polygon(iovMap.map);
-            iovPolygon.edit(latlngs);
+            iovPolygon.edit(latlngs, function (v) {
+                console.log(v);
+            });
         };
         let polygon_remove = function () {
             iovPolygon.remove();
@@ -219,7 +236,9 @@
             let start = [line[0].lat, line[0].lng];
             let end = [line[line.length - 1].lat, line[line.length - 1].lng];
             iovRectangle = new IOVMap.Rectangle(iovMap.map);
-            iovRectangle.edit([start, end]);
+            iovRectangle.edit([start, end], function (v) {
+                console.log(v);
+            });
         };
         let rectangle_remove = function () {
             iovRectangle.remove();
@@ -242,7 +261,9 @@
             let start = [line[0].lat, line[0].lng];
             let radius = 4000;
             iovCircle = new IOVMap.Circle(iovMap.map);
-            iovCircle.edit(start, radius);
+            iovCircle.edit(start, radius, function (v, r) {
+                console.log(v + ',' + r);
+            });
         };
         let circle_remove = function () {
             iovCircle.remove();
