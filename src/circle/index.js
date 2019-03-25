@@ -156,6 +156,7 @@ export class Circle {
             that.okMarker.setLatLng(latlng);
             that.cancelMarker.setLatLng(latlng);
             that.circle.setLatLng(latlng);
+            that.latlng = [latlng.lat, latlng.lng];
 
             let bounds = that.circle.getBounds();
             let sw = bounds.getSouthWest();
