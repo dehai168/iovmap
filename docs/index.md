@@ -8,20 +8,18 @@ layout: default
 
 其实本来想做个Vue版本的,但是太懒了！
 
-### 技术栈
-
-es6+webpack+leaflet
-
 
 ### 使用
 
-```html
-<div id="app" style="width: 800px; height: 600px;"></div>
-```
 ```js
-let iovmap = new IOVMap.Map('app', 'BMap');
-iovmap.setZoom(8);
+
+npm i iovmap --save
+
 ```
+
+### 技术栈
+
+es6+webpack+leaflet
 
 ### Demo
 

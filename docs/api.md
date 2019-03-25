@@ -1,4 +1,4 @@
-### Map类 (domid,options)
+### Map类
 
 >方法
 
@@ -19,22 +19,30 @@
 ```js
     iovMap.flyTo([lat,lng]);
 ```
+
 4. 移动到地图某点
+
 ```js
     iovMap.panTo([lat,lng]);
 ```
 
 5. 鸟瞰到地图某区域
+
 ```js
     iovMap.flyToBounds([lat,lng],[lat,lng]);
 ```
+
 6. 移动到地图某区域
+
 ```js
     iovMap.fitBounds([lat,lng],[lat,lng]);
 ```
+
 7. 改变地图类型
+
 ```js
     iovMap.changeMap(mapType);
 ```
+
 
 ### Marker类
