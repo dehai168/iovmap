@@ -1,6 +1,14 @@
 # IOVMap
 
-Based on leaflet development, a multi-map adaptation SDK facilitates the development and switching of map functions for upper-level services to meet industry applications.
+基于leaflet开发,支持多地图切换,统一封装上层业务调用接口,让更换地图不用再修改业务代码,以满足行业应用。
+
+## 使用
+
+```js
+
+   npm i iovmap --save
+
+```
 
 ## 技术栈
 
@@ -28,10 +36,10 @@ Based on leaflet development, a multi-map adaptation SDK facilitates the develop
 
 ## Demo
 
-    [Demo](https://dehai.site/iovmap/docs/index.html)
+    [Demo](https://dehai.site/iovmap/demo.html)
 
 ## 文档
 
-    [API](https://dehai.site/iovmap/docs/api.md)
+    [API](https://dehai.site/iovmap/api.md)
 
 ## 其他

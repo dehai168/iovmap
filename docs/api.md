@@ -1,27 +1,40 @@
 ### Map类 (domid,options)
->domid 元素id
 
->options 配置项
+>方法
+
+1. 初始化
+
 ```js
-{
-    center:[lng,lat],   //中心
-    zoom:8              //缩放等级
-}
+   let iovMap=new IOVMap.Map('domid',mapType); //mapType=BMap/BMap_Sate/BMap_Custom_midnight/BMap_Custom_dark/BMap_Custom_grayscale/GMap/GMap_Sate/AMap/AMap_Sate/SSMap
 ```
-#### 属性
 
-|属性|类型|描述|
-|--------|-----|----|
-|zoom|Number|缩放等级|
+2. 设置zoom
 
-#### 方法
+```js
+   iovMap.setZoom(number);
+```
 
-1. setZoom
-2. panTo
+3. 鸟瞰到地图某点
 
-#### 事件
+```js
+    iovMap.flyTo([lat,lng]);
+```
+4. 移动到地图某点
+```js
+    iovMap.panTo([lat,lng]);
+```
 
-1. 
-2. 
+5. 鸟瞰到地图某区域
+```js
+    iovMap.flyToBounds([lat,lng],[lat,lng]);
+```
+6. 移动到地图某区域
+```js
+    iovMap.fitBounds([lat,lng],[lat,lng]);
+```
+7. 改变地图类型
+```js
+    iovMap.changeMap(mapType);
+```
 
 ### Marker类
