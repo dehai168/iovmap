@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>获取行政区划</title>
+    <script src="http://api.map.baidu.com/api?v=2.0&ak=TfLggWZVZzD0zrMpthL4qaZ3Yih7TWdl"></script>
+    <script src="./info.js"></script>
+</head>
+
+<body onload="loadMap()">
+    <div id="map" style="width:800px;height:600px;"></div>
+    <div>
+        省<select name="" id="s" onchange="loadCity()">
+            <option>---请选择---</option>
+        </select>
+        市<select name="" id="si" onchange="loadDistrict()">
+            <option>---请选择---</option>
+        </select>
+        区县<select name="" id="x" onchange="load()">
+            <option>---请选择---</option>
+        </select>
+        <input type="text" hidden id="filename">
+        <input type="text" hidden id="content">
+        <button onclick="save()">保存</button>
+        <a href="" id="SaveChrome" style="display:none;">保存</a>
+    </div>
+    <script>
+        var map = null;
+        function loadMap() {
+            map = new BMap.Map("map");
+            map.centerAndZoom(new BMap.Point(116.403765, 39.914850), 5);
+            map.enableScrollWheelZoom();
+
+            loadProvince();
+        }
+        function loadProvince() {
+            const tempArray = [];
+            infoArray.forEach(element => {
+                if (tempArray.indexOf(element.sname) === -1) {
+                    tempArray.push(element.sname);
+                }
+            });
+            const s_ele = document.getElementById('s');
+            tempArray.forEach(element => {
+                const child = document.createElement('option');
+                child.innerText = element;
+                child.value = element;
+                s_ele.appendChild(child);
+            });
+        }
+        function loadCity() {
+            const tempArray = [];
+            const s_ele = document.getElementById('s');
+            infoArray.forEach(element => {
+                if (element.sname === s_ele.value && tempArray.indexOf(element.siname) === -1) {
+                    tempArray.push(element.siname);
+                }
+            });
+            const s_ele2 = document.getElementById('si');
+            s_ele2.options.length = 0;
+            tempArray.forEach(element => {
+                const child = document.createElement('option');
+                child.innerText = element;
+                child.value = element;
+                s_ele2.appendChild(child);
+            });
+        }
+        function loadDistrict() {
+            const tempArray = [];
+            const s_ele = document.getElementById('si');
+            infoArray.forEach(element => {
+                if (element.siname === s_ele.value && tempArray.indexOf(element.xname) === -1) {
+                    tempArray.push(element.xname);
+                }
+            });
+            const s_ele2 = document.getElementById('x');
+            s_ele2.options.length = 0;
+            tempArray.forEach(element => {
+                const child = document.createElement('option');
+                child.innerText = element;
+                child.value = element;
+                s_ele2.appendChild(child);
+            });
+        }
+        function load() {
+            var bdary = new BMap.Boundary();
+            const s = document.getElementById('s');
+            const si = document.getElementById('si');
+            const x = document.getElementById('x');
+            const filename = document.getElementById('filename');
+            const content = document.getElementById('content');
+            filename.value = s.value + si.value + x.value;
+            bdary.get(filename.value, function (rs) {       //获取行政区域
+                map.clearOverlays();        //清除地图覆盖物       
+                var count = rs.boundaries.length; //行政区域的点有多少个
+                if (count === 0) {
+                    alert('未能获取当前输入行政区域');
+                    return;
+                }
+                var pointArray = [];
+                for (var i = 0; i < count; i++) {
+                    var ply = new BMap.Polygon(rs.boundaries[i], { strokeWeight: 2, strokeColor: "#ff0000" }); //建立多边形覆盖物
+                    map.addOverlay(ply);  //添加覆盖物
+                    pointArray = pointArray.concat(ply.getPath());
+                }
+                map.setViewport(pointArray);    //调整视野 
+                let strArray = "";
+                pointArray.forEach(element => {
+                    strArray += element.lat + ',' + element.lng + ';';
+                });
+                content.value = strArray;
+            });
+        }
+        function save() {
+            // IE
+            if (/msie/i.test(navigator.userAgent)) {
+                var w = window.open("", "导出", "height=0,width=0,toolbar=no,menubar=no,scrollbars=no,resizable=on,location=no,status=no");
+                var filename = document.getElementById("filename").value;
+                var content = document.getElementById("content").value;
+                w.document.charset = "UTF-8";
+                w.document.write(content);
+                w.document.execCommand("SaveAs", false, filename + '.txt');
+                w.close();
+            }
+            // Firefox/Chrome/Safari/Opera
+            else {
+                var filename = document.getElementById("filename").value;
+                var content = document.getElementById("content").value;
+                str = encodeURIComponent(content);
+                document.getElementById("SaveChrome").download = filename + '.txt';
+                var aLink = document.getElementById("SaveChrome");
+                aLink.href = "data:text/csv;charset=utf-8," + str;
+                aLink.click();
+            }
+        } 
+    </script>
+</body>
+
+</html>
