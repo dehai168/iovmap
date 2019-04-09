@@ -29,7 +29,9 @@
         <button onclick="setZoom()">缩放地图</button>
         <button onclick="flyTo()">移动地图fly</button>
         <button onclick="panTo()">移动地图pan</button>
-        <button onclick="panTo()">移动地图pan</button>
+        <button onclick="boxIn()">拉框缩小</button>
+        <button onclick="boxOut()">拉框放大</button>
+        <button onclick="distance()">测量距离</button>
         <button onclick="flyToBounds()">地图视野fly</button>
         <button onclick="fitBounds()">地图视野pan</button>
         <button onclick="changeMap()">切换地图</button>
@@ -87,15 +89,24 @@
         let panTo = function () {
             iovMap.panTo([29.716608, 115.115005]);
         };
-        let flyToBounds=function(){
-            let start = [line[0].lat, line[0].lng];
-            let end = [line[line.length - 1].lat, line[line.length - 1].lng];
-            iovMap.flyToBounds(start,end);
+        let boxIn = function () {
+            iovMap.boxIn();
         };
-        let fitBounds=function(){
+        let boxOut = function () {
+            iovMap.boxOut();
+        };
+        let distance = function () {
+            iovMap.distance();
+        };
+        let flyToBounds = function () {
             let start = [line[0].lat, line[0].lng];
             let end = [line[line.length - 1].lat, line[line.length - 1].lng];
-            iovMap.fitBounds(start,end);
+            iovMap.flyToBounds(start, end);
+        };
+        let fitBounds = function () {
+            let start = [line[0].lat, line[0].lng];
+            let end = [line[line.length - 1].lat, line[line.length - 1].lng];
+            iovMap.fitBounds(start, end);
         };
         let changeMap = function () {
             let node = document.getElementById('select_maptype');
@@ -141,29 +152,24 @@
             });
         };
         let push = function () {
-            markerList.push([
-                {
-                    lat: 33.161818,
-                    lng: 105.523438,
-                    text: '渝D123456',
-                    state: 0,
-                    id: 0,
-                },
-                {
-                    lat: 34.161818,
-                    lng: 106.523438,
-                    text: '渝D223456',
+            let temp =
+            {
+                lat: 33.161818,
+                lng: 105.523438,
+            };
+            let tempArray = [];
+            for (let index = 0; index < 100; index++) {
+                temp.lat += 0.1;
+                temp.lng += 0.2;
+                tempArray.push({
+                    lat: temp.lat,
+                    lng: temp.lng,
+                    text: '测A' + (1000 + index),
                     state: 1,
-                    id: 1,
-                },
-                {
-                    lat: 35.161818,
-                    lng: 107.523438,
-                    text: '渝D323456',
-                    state: 2,
-                    id: 2,
-                }
-            ]);
+                    id: index,
+                });
+            }
+            markerList.push(tempArray);
         };
         let removeMarkerList = function () {
             markerList.remove();

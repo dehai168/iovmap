@@ -84,9 +84,9 @@ export class MarkerList {
                         that.popup.remove();
                     }
                     that.popup = L.popup()
-                            .setLatLng(latlng)
-                            .setContent('...加载中...')
-                            .openOn(that.map);
+                        .setLatLng(latlng)
+                        .setContent('...加载中...')
+                        .openOn(that.map);
                     that.popupId = element.ele.id;
                     if (that.clickCB) {
                         that.clickCB(element.ele.id);
@@ -113,7 +113,6 @@ export class MarkerList {
             this.list.forEach(element => {
                 that._drawArc(element);
                 that._drawText(element);
-                that.ctx.save();
                 that._setPopupLatLng(element);
             });
         }
@@ -152,15 +151,15 @@ export class MarkerList {
     _drawText(element) {
         let point = this.map.latLngToLayerPoint([element.lat, element.lng]);
         point = this.map.layerPointToContainerPoint(point);
-        let width = 40;
+        let width = element.text.length * 5;
         let height = 10;
         let x = point.x - width / 2;
-        let y = point.y - this.radius - height;
+        let y = point.y - this.radius - height - 2;
         //框部分2
         this.ctx.fillStyle = '#FFFFFF';
         this.ctx.fillRect(x, y, width, height);
         //字体部分
-        this.ctx.font = "italic small-caps 8px";
+        this.ctx.font = "7px";
         this.ctx.strokeStyle = '#000000';
         this.ctx.strokeText(element.text, x, y + height, width);
     }

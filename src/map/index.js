@@ -17,6 +17,9 @@
  */
 'use strict'
 
+import markerIconSrc from "../assets/polygon.png";
+import cancelSrc from "../assets/cancel.png";
+
 export class Map {
     /**
      * 初始化地图
@@ -200,6 +203,125 @@ export class Map {
             zoom = parseInt(zoom);
         }
         this.map.setZoom(zoom);
+    }
+    /**
+     * 拉框缩小
+     */
+    boxIn() {
+        let that = this;
+        let latlngs = [];
+        let rectangle = null;
+        let mousemoveEvent = function (e) {
+            if (rectangle !== null) {
+                if (latlngs.length === 1) {
+                    latlngs.push(e.latlng);
+                } else {
+                    latlngs[1] = e.latlng;
+                }
+                rectangle.setBounds(latlngs);
+            }
+        };
+        let clickEvent = function (e) {
+            if (rectangle === null) {
+                latlngs.push(e.latlng);
+                rectangle = L.rectangle(latlngs, { color: 'blue' });
+                rectangle.addTo(that.map);
+            } else {
+                const bounds = L.latLngBounds(latlngs[0], latlngs[1]);
+                that.map.panInsideBounds(bounds);
+                setTimeout(function () {
+                    that.map.zoomOut();
+                }, 500);
+                rectangle.remove();
+                that.map.off('click', clickEvent);
+                that.map.off('mousemove', mousemoveEvent);
+            }
+        };
+        this.map.on('click', clickEvent);
+        this.map.on('mousemove', mousemoveEvent);
+    }
+    /**
+     * 拉框放大
+     */
+    boxOut() {
+        let that = this;
+        let latlngs = [];
+        let rectangle = null;
+        let mousemoveEvent = function (e) {
+            if (rectangle !== null) {
+                if (latlngs.length === 1) {
+                    latlngs.push(e.latlng);
+                } else {
+                    latlngs[1] = e.latlng;
+                }
+                rectangle.setBounds(latlngs);
+            }
+        };
+        let clickEvent = function (e) {
+            if (rectangle === null) {
+                latlngs.push(e.latlng);
+                rectangle = L.rectangle(latlngs, { color: 'blue' });
+                rectangle.addTo(that.map);
+            } else {
+                const bounds = L.latLngBounds(latlngs[0], latlngs[1]);
+                that.map.fitBounds(bounds);
+                rectangle.remove();
+                that.map.off('click', clickEvent);
+                that.map.off('mousemove', mousemoveEvent);
+            }
+        };
+        this.map.on('click', clickEvent);
+        this.map.on('mousemove', mousemoveEvent);
+    }
+    /**
+     * 测量距离
+     */
+    distance() {
+        let that = this;
+        let polyline = null;
+        let latlngs = [];
+        let markerIcon = L.icon({
+            iconUrl: markerIconSrc,
+            iconSize: [12, 12],
+            iconAnchor: [6, 6],
+        });
+        let cancelIcon = L.icon({
+            iconUrl: cancelSrc,
+            iconSize: [12, 12],
+            iconAnchor: [-12, 6],
+        });
+        let markerList = [];
+        let distance = 0;
+        let clickEvent = function (e) {
+            latlngs.push(e.latlng);
+            let marker = L.marker(e.latlng, { icon: markerIcon }).addTo(that.map);
+            if (polyline === null) {
+                polyline = L.polyline(latlngs, { color: 'blue' });
+                polyline.addTo(that.map);
+            } else {
+                polyline.setLatLngs(latlngs);
+                let first = latlngs[latlngs.length - 2];
+                let last = latlngs[latlngs.length - 1];
+                distance += that.map.distance(first, last);
+                marker.bindTooltip(distance > 1000 ? (distance / 1000).toFixed(2) + "km" : distance.toFixed(2) + "m").openTooltip();
+            }
+            markerList.push(marker);
+        };
+        let markerClickEvent = function (e) {
+            polyline.remove();
+            markerList.forEach(element => {
+                element.remove();
+            });
+        };
+        let dblclickEvent = function (e) {
+            let cancelMarker = L.marker(e.latlng, { icon: cancelIcon }).addTo(that.map);
+            cancelMarker.on('click', markerClickEvent);
+            markerList.push(cancelMarker);
+            that.map.off('click', clickEvent);
+            that.map.off('dblclick', dblclickEvent);
+        };
+        this.map.on('click', clickEvent);
+        this.map.on('dblclick', dblclickEvent);
     }
     /**
      * 移动地图到坐标
