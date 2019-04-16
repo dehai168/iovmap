@@ -42,6 +42,7 @@ export class Map {
         this.map = new L.map(domid, option);
 
         this.map.addControl(L.control.zoom({ position: "topright" }));
+        this.map.addControl(L.control.scale());
         this.map.addLayer(this.mapLayer);
         this.map.setView(center, zoom);
     }
@@ -55,7 +56,7 @@ export class Map {
                         maxZoom: 18,
                         minZoom: 5,
                         subdomains: [0, 1, 2, 3],
-                        attribution: "ⓒ 2012 Baidu",
+                        attribution: "ⓒ 2019 Baidu",
                         tms: true
                     }
                 );
@@ -67,7 +68,7 @@ export class Map {
                         maxZoom: 18,
                         minZoom: 5,
                         subdomains: [0, 1, 2, 3],
-                        attribution: "ⓒ 2012 Baidu",
+                        attribution: "ⓒ 2019 Baidu",
                         tms: true
                     }
                 );
@@ -79,7 +80,7 @@ export class Map {
                         maxZoom: 18,
                         minZoom: 5,
                         subdomains: [0, 1, 2],
-                        attribution: "ⓒ 2012 Baidu",
+                        attribution: "ⓒ 2019 Baidu",
                         tms: true
                     }
                 );
@@ -91,7 +92,7 @@ export class Map {
                         maxZoom: 18,
                         minZoom: 5,
                         subdomains: [0, 1, 2],
-                        attribution: "ⓒ 2012 Baidu",
+                        attribution: "ⓒ 2019 Baidu",
                         tms: true
                     }
                 );
@@ -103,7 +104,7 @@ export class Map {
                         maxZoom: 18,
                         minZoom: 5,
                         subdomains: [0, 1, 2],
-                        attribution: "ⓒ 2012 Baidu",
+                        attribution: "ⓒ 2019 Baidu",
                         tms: true
                     }
                 );
@@ -202,6 +203,13 @@ export class Map {
         if (typeof zoom === 'string') {
             zoom = parseInt(zoom);
         }
+        this.map.setZoom(zoom);
+    }
+    /**
+     * 全图
+     */
+    minZoom() {
+        const zoom = this.map.getMinZoom();
         this.map.setZoom(zoom);
     }
     /**
