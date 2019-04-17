@@ -84,7 +84,7 @@
         let setZoom = function () {
             iovMap.setZoom(10);
         };
-        let minZoom=function(){
+        let minZoom = function () {
             iovMap.minZoom();
         };
         let flyTo = function () {
@@ -162,7 +162,7 @@
                 lng: 105.523438,
             };
             let tempArray = [];
-            for (let index = 0; index < 1; index++) {
+            for (let index = 0; index < 5; index++) {
                 temp.lat += 0.1;
                 temp.lng += 0.2;
                 tempArray.push({
@@ -170,6 +170,7 @@
                     lng: temp.lng,
                     text: '测A' + (1000 + index),
                     state: 1,
+                    //direction: 0,
                     id: index,
                 });
             }

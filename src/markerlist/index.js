@@ -15,6 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import offline from "../assets/0.png";
+import online from "../assets/1.png";
+import alarm from "../assets/2.png";
+
 export class MarkerList {
     constructor(map, canvas, cb) {
         this.map = map;
@@ -127,25 +131,64 @@ export class MarkerList {
     _drawArc(element) {
         let point = this.map.latLngToLayerPoint([element.lat, element.lng]);
         point = this.map.layerPointToContainerPoint(point);
-        this.radius = 5;  //圆圈半径
-        this.ctx.beginPath();
-        this.ctx.strokeStyle = 'black';
-        this.ctx.lineWidth = 1;
-        this.ctx.arc(point.x, point.y, this.radius, 0, 2 * Math.PI);
-        let bounds = L.bounds([[point.x - this.radius, point.y - this.radius], [point.x + this.radius, point.y + this.radius]]);
+        let boundWidth = 0;
+        this.boundHeight = 0;
+        if (element.direction != undefined) {
+            let img = new Image();
+            let imgWidth = 24;
+            let imgHeight = 24;
+            let direction = parseInt(element.direction);
+            let that = this;
+            boundWidth = imgWidth / 2;
+            this.boundHeight = imgHeight / 2;
+            img.onload = function () {
+                that.ctx.translate(point.x, point.y);
+                if (direction <= 0 || direction >= 360) {
+                    that.ctx.drawImage(img, -imgWidth / 2, -imgHeight / 2);
+                } else {
+                    let angle = 0;
+                    if (direction > 0 && direction <= 180) {
+                        angle = Math.PI * direction / 180;
+                    } else {
+                        angle = Math.PI * (direction / 180 - 2);
+                    }
+                    that.ctx.rotate(angle);
+                    that.ctx.drawImage(img, -imgWidth / 2, -imgHeight / 2);
+                    that.ctx.rotate(-angle);
+                }
+                that.ctx.translate(-point.x, -point.y);
+            };
+            switch (element.state) {
+                case 0: img.src = offline; break; //离线
+                case 1: img.src = online; break; //在线
+                case 2: img.src = alarm; break; //报警
+                default:
+                    break;
+            }
+        } else {
+            this.radius = 6;  //圆圈半径
+            this.ctx.beginPath();
+            this.ctx.strokeStyle = 'black';
+            this.ctx.lineWidth = 1;
+            this.ctx.arc(point.x, point.y, this.radius, 0, 2 * Math.PI);
+            switch (element.state) {
+                case 0: this.ctx.fillStyle = "#D8D8D8"; break; //离线
+                case 1: this.ctx.fillStyle = "#82FA58"; break; //在线
+                case 2: this.ctx.fillStyle = "#FE2E2E"; break; //报警
+                default:
+                    break;
+            }
+            this.ctx.fill();
+            this.ctx.stroke();
+            boundWidth = this.radius;
+            this.boundHeight = this.radius;
+        }
+
+        let bounds = L.bounds([[point.x - boundWidth, point.y - this.boundHeight], [point.x + boundWidth, point.y + this.boundHeight]]);
         this.boundsList.push({
             ele: element,
             bounds: bounds,
         });
-        switch (element.state) {
-            case 0: this.ctx.fillStyle = "#D8D8D8"; break; //离线
-            case 1: this.ctx.fillStyle = "#82FA58"; break; //在线
-            case 2: this.ctx.fillStyle = "#FE2E2E"; break; //报警
-            default:
-                break;
-        }
-        this.ctx.fill();
-        this.ctx.stroke();
     }
     /**
      * 画车牌
@@ -157,7 +200,7 @@ export class MarkerList {
         let width = element.text.length * 5;
         let height = 10;
         let x = point.x - width / 2;
-        let y = point.y - this.radius - height - 2;
+        let y = point.y - this.boundHeight - height - 2;
         //框部分2
         this.ctx.fillStyle = '#FFFFFF';
         this.ctx.fillRect(x, y, width, height);
