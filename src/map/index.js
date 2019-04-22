@@ -213,6 +213,13 @@ export class Map {
         this.map.setZoom(zoom);
     }
     /**
+     * 最大
+     */
+    maxZoom() {
+        const zoom = this.map.getMaxZoom();
+        this.map.setZoom(zoom);
+    }
+    /**
      * 拉框缩小
      */
     boxIn() {

@@ -30,6 +30,7 @@
         <button onclick="flyTo()">移动地图fly</button>
         <button onclick="panTo()">移动地图pan</button>
         <button onclick="minZoom()">全图</button>
+        <button onclick="maxZoom()">大图</button>
         <button onclick="boxIn()">拉框缩小</button>
         <button onclick="boxOut()">拉框放大</button>
         <button onclick="distance()">测量距离</button>
@@ -86,6 +87,9 @@
         };
         let minZoom = function () {
             iovMap.minZoom();
+        };
+        let maxZoom=function(){
+            iovMap.maxZoom();
         };
         let flyTo = function () {
             iovMap.flyTo([29.716608, 115.115005]);
