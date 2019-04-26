@@ -16,7 +16,8 @@
  * limitations under the License.
  */
 'use strict'
-
+import L from 'leaflet';
+import proj4leaflet from "proj4leaflet";
 import markerIconSrc from "../assets/polygon.png";
 import cancelSrc from "../assets/cancel.png";
 
