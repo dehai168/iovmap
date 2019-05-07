@@ -24,18 +24,21 @@ export class MarkerList {
         this.map = map;
         this.canvas = canvas;
         this.clickCB = cb;
+        this.imgList = [];
         this.boundsList = [];
         this.popup = null;
         this.popupId = -1;
         this.ctx = canvas.getContext('2d');
         let that = this;
         this.drawEvent = function (e) {
-            that._draw();
+            that._reDraw();
         };
         this.map.on('zoomend', this.drawEvent);
         this.map.on('resize', this.drawEvent);
         this.map.on('moveend', this.drawEvent);
         this._addClickEvent();
+        this._init();
+        this._cache();
     }
     /**
      * 增加 markerList
@@ -43,7 +46,7 @@ export class MarkerList {
      */
     push(listArray) {
         this.list = listArray;
-        this._draw();
+        this._reDraw();
     }
     /**
      * 清理 markerList
@@ -60,6 +63,45 @@ export class MarkerList {
         if (this.popup !== null) {
             this.popup.setContent(htmlStr);
         }
+    }
+    /**
+     * 初始化画布
+     */
+    _init() {
+        let getPixelRatio = function (context) {
+            let backingStore = context.backingStorePixelRatio ||
+                context.webkitBackingStorePixelRatio ||
+                context.mozBackingStorePixelRatio ||
+                context.msBackingStorePixelRatio ||
+                context.oBackingStorePixelRatio ||
+                context.backingStorePixelRatio || 1;
+            return (window.devicePixelRatio || 1) / backingStore;
+        };
+        //画文字
+        let ratio = getPixelRatio(this.ctx);
+
+        this.canvas.style.width = this.canvas.width + 'px';
+        this.canvas.style.height = this.canvas.height + 'px';
+
+        this.canvas.width = this.canvas.width * ratio;
+        this.canvas.height = this.canvas.height * ratio;
+
+        // 放大倍数
+        this.ctx.scale(ratio, ratio);
+    }
+    /**
+     * 缓存图片
+     */
+    _cache() {
+        let img0 = new Image(24, 24);
+        img0.src = offline;
+        this.imgList.push(img0);
+        let img1 = new Image(24, 24);
+        img1.src = online;
+        this.imgList.push(img1);
+        let img2 = new Image(24, 24);
+        img2.src = alarm;
+        this.imgList.push(img2);
     }
     /**
      * 改变气泡位置
@@ -113,38 +155,31 @@ export class MarkerList {
     /**
      * 重绘
      */
-    _draw() {
+    _reDraw() {
         let that = this;
         this._clear();
         if (this.list && this.list.length > 0) {
-            this.list.forEach(element => {
-                that._drawArc(element);
-                that._drawText(element);
-                that._setPopupLatLng(element);
-            });
+            console.time('time');
+            this._draw();
+            console.timeEnd('time');
         }
     }
     /**
-     * 画圆圈
-     * @param {object} element 
+     * 绘制
      */
-    _drawArc(element) {
-        let point = this.map.latLngToLayerPoint([element.lat, element.lng]);
-        point = this.map.layerPointToContainerPoint(point);
-        let boundWidth = 0;
-        this.boundHeight = 0;
-        if (element.direction != undefined) {
-            let img = new Image();
-            let imgWidth = 24;
-            let imgHeight = 24;
-            let direction = parseInt(element.direction);
-            let that = this;
-            boundWidth = imgWidth / 2;
-            this.boundHeight = imgHeight / 2;
-            img.onload = function () {
-                that.ctx.translate(point.x, point.y);
+    _draw() {
+        let that = this;
+        let size = this.map.getSize();
+        let viewBounds = L.bounds([0, 0], [size.x, size.y]);
+        this.list.forEach(element => {
+            let direction = parseInt(element.direction ? element.direction : 0); // 方向
+            let img = that.imgList[element.state];
+            let point = that.map.latLngToLayerPoint([element.lat, element.lng]);
+            point = that.map.layerPointToContainerPoint(point); //地理坐标点转换到容器像素点
+            if (viewBounds.contains(point)) { //视界内的点进行绘制
+                //绘制图标
                 if (direction <= 0 || direction >= 360) {
-                    that.ctx.drawImage(img, -imgWidth / 2, -imgHeight / 2);
+                    that.ctx.drawImage(img, point.x - img.width / 2, point.y - img.height / 2);
                 } else {
                     let angle = 0;
                     if (direction > 0 && direction <= 180) {
@@ -153,60 +188,30 @@ export class MarkerList {
                         angle = Math.PI * (direction / 180 - 2);
                     }
                     that.ctx.rotate(angle);
-                    that.ctx.drawImage(img, -imgWidth / 2, -imgHeight / 2);
+                    that.ctx.drawImage(img, point.x - img.width / 2, point.y - img.height / 2);
                     that.ctx.rotate(-angle);
                 }
-                that.ctx.translate(-point.x, -point.y);
-            };
-            switch (element.state) {
-                case 0: img.src = offline; break; //离线
-                case 1: img.src = online; break; //在线
-                case 2: img.src = alarm; break; //报警
-                default:
-                    break;
+                //绘制文字
+                let width = element.text.length * 5;
+                let height = 10;
+                let x = point.x - width / 2;
+                let y = point.y - img.height / 2 - height - 2;
+                //框部分
+                that.ctx.fillStyle = '#FFFFFF';
+                that.ctx.fillRect(x, y, width, height);
+                //字体部分
+                that.ctx.font = "7px";
+                that.ctx.strokeStyle = '#000000';
+                that.ctx.strokeText(element.text, x, y + height, width);
+                //范围列表
+                let bounds = L.bounds([[x, y], [point.x + img.width / 2, point.y + img.height / 2]]);
+                that.boundsList.push({
+                    ele: element,
+                    bounds: bounds,
+                });
+                //气泡
+                that._setPopupLatLng(element);
             }
-        } else {
-            this.radius = 6;  //圆圈半径
-            this.ctx.beginPath();
-            this.ctx.strokeStyle = 'black';
-            this.ctx.lineWidth = 1;
-            this.ctx.arc(point.x, point.y, this.radius, 0, 2 * Math.PI);
-            switch (element.state) {
-                case 0: this.ctx.fillStyle = "#D8D8D8"; break; //离线
-                case 1: this.ctx.fillStyle = "#82FA58"; break; //在线
-                case 2: this.ctx.fillStyle = "#FE2E2E"; break; //报警
-                default:
-                    break;
-            }
-            this.ctx.fill();
-            this.ctx.stroke();
-            boundWidth = this.radius;
-            this.boundHeight = this.radius;
-        }
-
-        let bounds = L.bounds([[point.x - boundWidth, point.y - this.boundHeight], [point.x + boundWidth, point.y + this.boundHeight]]);
-        this.boundsList.push({
-            ele: element,
-            bounds: bounds,
         });
-    }
-    /**
-     * 画车牌
-     * @param {object} element 
-     */
-    _drawText(element) {
-        let point = this.map.latLngToLayerPoint([element.lat, element.lng]);
-        point = this.map.layerPointToContainerPoint(point);
-        let width = element.text.length * 5;
-        let height = 10;
-        let x = point.x - width / 2;
-        let y = point.y - this.boundHeight - height - 2;
-        //框部分2
-        this.ctx.fillStyle = '#FFFFFF';
-        this.ctx.fillRect(x, y, width, height);
-        //字体部分
-        this.ctx.font = "7px";
-        this.ctx.strokeStyle = '#000000';
-        this.ctx.strokeText(element.text, x, y + height, width);
     }
 }

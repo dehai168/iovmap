@@ -166,9 +166,9 @@
                 lng: 105.523438,
             };
             let tempArray = [];
-            for (let index = 0; index < 5; index++) {
-                temp.lat += 0.1;
-                temp.lng += 0.2;
+            for (let index = 0; index < 5000; index++) {
+                temp.lat += 0.001;
+                temp.lng += 0.002;
                 tempArray.push({
                     lat: temp.lat,
                     lng: temp.lng,
