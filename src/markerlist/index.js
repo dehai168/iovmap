@@ -23,6 +23,7 @@ import m1 from "../assets/m1.png";
 import m2 from "../assets/m2.png";
 import m3 from "../assets/m3.png";
 import m4 from "../assets/m4.png";
+import centroid from "polygon-centroid";
 
 export class MarkerList {
     constructor(map, canvas, cb) {
@@ -195,11 +196,11 @@ export class MarkerList {
                     list: [],
                     one: null,
                 });
+                //this.ctx.strokeRect(start[0], start[1], end[0], end[1]);  //TODO test
             }
         }
         this.list.forEach(element => {
-            let point = this.map.latLngToLayerPoint([element.lat, element.lng]);
-            point = this.map.layerPointToContainerPoint(point); //地理坐标点转换到容器像素点
+            let point = this.map.latLngToContainerPoint([element.lat, element.lng]);//地理坐标点转换到容器像素点
             if (viewBounds.contains(point)) { //视界内的点进行绘制
                 boxList.forEach(item => {
                     if (item.bounds.contains(point)) { //点在box内
@@ -212,69 +213,21 @@ export class MarkerList {
         this.drawList.length = 0;
         boxList.forEach(item => {
             const size = item.list.length;
-            const center = this._getPolygonAreaCenter(item.list);
-            this.drawList.push({
-                size,
-                center,
-                one: item.one,
-            });
+            if (size > 0) {
+                const obj = {};
+                item.list = item.list.reduce(function (item, next) { //去重,不然计算质心会出错
+                    obj[next.x] ? '' : obj[next.x] = true && item.push(next);
+                    return item;
+                }, []);
+                const center = centroid(item.list);//获取多边形质心
+                const latlng = this.map.containerPointToLatLng([center.x, center.y]);
+                this.drawList.push({
+                    size,
+                    latlng,
+                    one: item.one,
+                });
+            }
         });
-    }
-    /**
-     * 获取多边形质心
-     * @param {*} points 
-     */
-    _getPolygonAreaCenter(points) {
-        if (points.length === 1) {
-            return points[0];
-        } else if (points.length === 2) {
-            return [(points[0].x + points[1].x) / 2, (points[0].y + points[1].y) / 2];
-        } else {
-            //以下为网上down的一个多边形质心算法
-            function Point(x, y) {
-                this.x = x;
-                this.y = y;
-            }
-            function Region(points) {
-                this.points = points || [];
-                this.length = points.length;
-            }
-            Region.prototype.area = function () {
-                var area = 0,
-                    i,
-                    j,
-                    point1,
-                    point2;
-                for (i = 0, j = this.length - 1; i < this.length; j = i, i++) {
-                    point1 = this.points[i];
-                    point2 = this.points[j];
-                    area += point1.x * point2.y;
-                    area -= point1.y * point2.x;
-                }
-                area /= 2;
-                return area;
-            };
-            Region.prototype.centroid = function () {
-                var x = 0,
-                    y = 0,
-                    i,
-                    j,
-                    f,
-                    point1,
-                    point2;
-                for (i = 0, j = this.length - 1; i < this.length; j = i, i++) {
-                    point1 = this.points[i];
-                    point2 = this.points[j];
-                    f = point1.x * point2.y - point2.x * point1.y;
-                    x += (point1.x + point2.x) * f;
-                    y += (point1.y + point2.y) * f;
-                }
-                f = this.area() * 6;
-                return new Point(x / f, y / f);
-            };
-            const region = new Region(points);
-            return region.centroid();
-        }
     }
     /**
      * 绘制
@@ -286,7 +239,7 @@ export class MarkerList {
             } else if (item.size === 1) {//常规绘制
                 let direction = parseInt(item.one.direction ? item.one.direction : 0); // 方向
                 let img = this.imgList[item.one.state];
-                let point = item.center;
+                let point = this.map.latLngToContainerPoint(item.latlng);
                 //绘制图标
                 if (direction <= 0 || direction >= 360) {
                     this.ctx.drawImage(img, point.x - img.width / 2, point.y - img.height / 2);
@@ -323,7 +276,7 @@ export class MarkerList {
                 this._setPopupLatLng(item.one);
             } else {//集群绘制
                 const img = new Image();
-                const point = item.center;
+                const point = this.map.latLngToContainerPoint(item.latlng);
                 const that = this;
                 img.onload = function () {
                     const textWidth = 25;
