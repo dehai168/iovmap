@@ -49,7 +49,7 @@ import m3 from "../assets/m3.png";
 import m4 from "../assets/m4.png";
 import centroid from "polygon-centroid";
 
-export class MarkerList {
+export class MarkerList_Native {
     constructor(map, cb) {
         this.map = map;
         this.clickCB = cb;
@@ -99,6 +99,7 @@ export class MarkerList {
         };
         this.map.on('zoomend', this.drawEvent);
         this.map.on('resize', this.drawEvent);
+        this.map.on('moveend', this.drawEvent);
     }
     /**
      * 增加 markerList
@@ -112,8 +113,10 @@ export class MarkerList {
      * 清理 markerList
      */
     remove() {
-        this.list.length = 0;
         this._clear();
+        this.list.length = 0;
+        this.drawList.length = 0;
+        this.markerList.length = 0;
     }
     /**
      * 设定气泡内容
@@ -232,28 +235,44 @@ export class MarkerList {
                 let point = this.map.latLngToContainerPoint(item.latlng);
                 //绘制图标
                 let myIcon = L.divIcon({
-                    html: "<div><span>" + item.one.text + "</span><img src=" + img + "></img></div>"
+                    className: 'myIconClass',
+                    html: "<div align='center' style='margin-top:-25px;margin-left:-45px;width:100px;'><span style='display:block;width:100px'>" + item.one.text + "</span><img src=" + img + "></img></div>"
                 });
                 const marker = L.marker(item.latlng, { icon: myIcon }).addTo(this.map);
+                const that = this;
+                marker.on('click', (e) => {
+                    if (that.popup !== null) {
+                        that.popup.remove();
+                    }
+                    that.popup = L.popup()
+                        .setLatLng(e.latlng)
+                        .setContent('...加载中...')
+                        .openOn(that.map);
+                    that.popupId = item.one.id;
+                    if (that.clickCB) {
+                        that.clickCB(item.one.id);
+                    }
+                });
                 this.markerList.push(marker);
                 //气泡
                 this._setPopupLatLng(item.one);
             } else {//集群绘制
-                const img = "";
+                let style = "text-align:center;";
                 if (item.size <= 1000) {
-                    img = m0;
+                    style += "margin-top:-26px;margin-left:-26px;width:53px;height:52px;line-height:52px;background:url(" + m0 + ") no-repeat;"
                 } else if (item.size <= 2000) {
-                    img = m1;
+                    style += "margin-top:-27px;margin-left:-28px;width:56px;height:55px;line-height:55px;background:url(" + m1 + ") no-repeat;"
                 } else if (item.size <= 4000) {
-                    img = m2;
+                    style += "margin-top:-32px;margin-left:-33px;width:66px;height:65px;line-height:65px;background:url(" + m2 + ") no-repeat;"
                 } else if (item.size <= 8000) {
-                    img = m3;
+                    style += "margin-top:-38px;margin-left:-39px;width:78px;height:77px;line-height:77px;background:url(" + m3 + ") no-repeat;"
                 } else {
-                    img = m4;
+                    style += "margin-top:-44px;margin-left:-45px;width:90px;height:89px;line-height:89px;background:url(" + m4 + ") no-repeat;"
                 }
                 //绘制图标
                 let myIcon = L.divIcon({
-                    html: "<div><span>" + item.size + "</span><img src=" + img + "></img></div>"
+                    className: 'myIconClass',
+                    html: "<div style='" + style + "'>" + item.size + "</div>"
                 });
                 const marker = L.marker(item.latlng, { icon: myIcon }).addTo(this.map);
                 this.markerList.push(marker);

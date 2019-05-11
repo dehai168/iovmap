@@ -18,7 +18,7 @@
 import { Map } from './src/map/index';
 import { Marker } from './src/marker/index';
 import { MarkerList } from "./src/markerlist/index";
-import { MarkerList2 } from "./src/markerlist2/index";
+import { MarkerList_Native } from "./src/markerlist_native/index";
 import { Polyline } from './src/polyline/index';
 import { Rectangle } from './src/rectangle/index';
 import { Polygon } from './src/polygon/index';
@@ -31,7 +31,7 @@ const IOVMap = {
     Map,
     Marker,
     MarkerList,
-    MarkerList2,
+    MarkerList_Native,
     Polyline,
     Rectangle,
     Polygon,
