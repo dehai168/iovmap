@@ -43,3 +43,5 @@
     [API](https://dehai.site/iovmap/api.md)
 
 ## 其他
+   
+   瓦片数量=Math.pow(Math.pow(2,n),2); //n表示当前缩放等级
