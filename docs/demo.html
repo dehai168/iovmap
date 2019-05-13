@@ -34,6 +34,7 @@
         <button onclick="boxIn()">拉框缩小</button>
         <button onclick="boxOut()">拉框放大</button>
         <button onclick="distance()">测量距离</button>
+        <button onclick="boxFind()">拉框找车</button>
         <button onclick="flyToBounds()">地图视野fly</button>
         <button onclick="fitBounds()">地图视野pan</button>
         <button onclick="changeMap()">切换地图</button>
@@ -47,7 +48,8 @@
         <button onclick="marker_remove()">移除marker</button>
     </div>
     <div style="border:1px solid gray;margin-top: 10px;padding: 5px">
-        <button onclick="initMarkerList()">初始化markerList</button>
+        <button onclick="initMarkerList()">初始化markerList(cnavas)</button>
+        <button onclick="initMarkerList2()">初始化markerList(native)</button>
         <button onclick="push()">增加markerList内容</button>
         <button onclick="removeMarkerList()">移除</button>
     </div>
@@ -88,7 +90,7 @@
         let minZoom = function () {
             iovMap.minZoom();
         };
-        let maxZoom=function(){
+        let maxZoom = function () {
             iovMap.maxZoom();
         };
         let flyTo = function () {
@@ -119,6 +121,29 @@
         let changeMap = function () {
             let node = document.getElementById('select_maptype');
             iovMap.changeMap(node.value);
+        };
+        let boxFind = function () {
+            const Rectangle = new IOVMap.Rectangle(iovMap.map);
+            let temp =
+            {
+                lat: 33.161818,
+                lng: 105.523438,
+            };
+            let tempArray = [];
+            for (let index = 0; index < 5000; index++) {
+                temp.lat += 0.001;
+                temp.lng += 0.002;
+                tempArray.push({
+                    lat: temp.lat,
+                    lng: temp.lng,
+                    text: '测A' + (1000 + index),
+                    id: index,
+                });
+            }
+            Rectangle.draw(function (v) {
+                const result = iovMap.findExist(tempArray, v);
+                console.log(result);
+            });
         };
         // Marker
         let iovMarker = null;
@@ -152,12 +177,14 @@
         }
         // markerList
         let initMarkerList = function () {
-            // let canvas = iovMap.createCanvasPane();
-            // markerList = new IOVMap.MarkerList(iovMap.map, canvas, function (id) {
-            //     console.log(id);
-            //     let now = new Date();
-            //     markerList.setPopupContent(now.getTime() + "");
-            // });
+            let canvas = iovMap.createCanvasPane();
+            markerList = new IOVMap.MarkerList(iovMap.map, canvas, function (id) {
+                console.log(id);
+                let now = new Date();
+                markerList.setPopupContent(now.getTime() + "");
+            });
+        };
+        let initMarkerList2 = function () {
             markerList = new IOVMap.MarkerList_Native(iovMap.map, function (id) {
                 console.log(id);
                 let now = new Date();

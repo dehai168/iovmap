@@ -432,4 +432,19 @@ export class Map {
         this.map.off('resize', this.customCanvasPaneResizeEvent);
         this.map.off('moveend', this.customCanvasPaneMoveendEvent);
     }
+    /**
+     * 查询包含在列表内的点
+     * @param {*} list 定位列表
+     * @param {*} latlngs 区域
+     */
+    findExist(list, latlngs) {
+        const result = [];
+        const bounds = L.latLngBounds(latlngs[0], latlngs[1]);
+        list.forEach(element => {
+            if (bounds.contains([element.lat, element.lng])) {
+                result.push(element.id);
+            }
+        });
+        return result;
+    }
 }
