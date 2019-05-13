@@ -442,7 +442,7 @@ export class Map {
         const bounds = L.latLngBounds(latlngs[0], latlngs[1]);
         list.forEach(element => {
             if (bounds.contains([element.lat, element.lng])) {
-                result.push(element.id);
+                result.push({ id: element.id, text: element.text });
             }
         });
         return result;
