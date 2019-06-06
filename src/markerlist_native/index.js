@@ -145,9 +145,12 @@ export class MarkerList_Native {
      * 清理
      */
     _clear() {
-        this.markerList.forEach(element => {
+        while (this.markerList.length > 0) {
+            const element = this.markerList.shift();
+            element.off();
+            L.DomUtil.remove(element._icon);
             element.remove();
-        });
+        }
     }
     /**
      * 重绘
@@ -156,10 +159,8 @@ export class MarkerList_Native {
         let that = this;
         this._clear();
         if (this.list && this.list.length > 0) {
-            console.time('time');
             this._cluster();
             this._draw();
-            console.timeEnd('time');
         }
     }
     /**

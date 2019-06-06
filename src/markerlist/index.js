@@ -167,10 +167,8 @@ export class MarkerList {
         let that = this;
         this._clear();
         if (this.list && this.list.length > 0) {
-            console.time('time');
             this._cluster();
             this._draw();
-            console.timeEnd('time');
         }
     }
     /**

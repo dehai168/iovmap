@@ -210,11 +210,11 @@
                     id: index,
                 });
             }
-            markerList.push(tempArray);
-            // setInterval(() => {
-            //     tempArray[0].lat += 0.1;
-            //     markerList.push(tempArray);
-            // }, 2000);
+            //markerList.push(tempArray);
+            setInterval(() => {
+                tempArray[0].lat += 0.1;
+                markerList.push(tempArray);
+            }, 2000);
         };
         let removeMarkerList = function () {
             markerList.remove();
