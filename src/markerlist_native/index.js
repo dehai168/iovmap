@@ -219,6 +219,37 @@ export class MarkerList_Native {
         });
     }
     /**
+     * 获取元素图标
+     * @param {*} one 
+     */
+    _getIcon(one) {
+        let direction = parseInt(one.direction ? one.direction : 0); // 方向
+        let intAngle = parseInt(direction);
+        while (intAngle > 360) {
+            intAngle = intAngle - 360;
+        }
+        direction = Math.floor((intAngle + 22) / 45);
+        let img = this.imgList[one.state][direction];
+        //绘制图标
+        let myIcon = L.divIcon({
+            className: 'myIconClass',
+            html: "<div align='center' style='margin-top:-25px;margin-left:-45px;width:100px;'><span style='display:block;width:100px'>" + one.text + "</span><img src=" + img + "></img></div>"
+        });
+        return myIcon;
+    }
+    /**
+     * 更新一个图标
+     * @param {*} one 
+     */
+    updateIcon(one) {
+        this.markerList.forEach(element => {
+            if (element.customid === one.id) {
+                const myIcon = this._getIcon(one);
+                element.setIcon(myIcon);
+            }
+        });
+    }
+    /**
      * 绘制
      */
     _draw() {
@@ -226,21 +257,10 @@ export class MarkerList_Native {
             if (item.size === 0) {
 
             } else if (item.size === 1) {//常规绘制
-                let direction = parseInt(item.one.direction ? item.one.direction : 0); // 方向
-                let intAngle = parseInt(direction);
-                while (intAngle > 360) {
-                    intAngle = intAngle - 360;
-                }
-                direction = Math.floor((intAngle + 22) / 45);
-                let img = this.imgList[item.one.state][direction];
-                let point = this.map.latLngToContainerPoint(item.latlng);
-                //绘制图标
-                let myIcon = L.divIcon({
-                    className: 'myIconClass',
-                    html: "<div align='center' style='margin-top:-25px;margin-left:-45px;width:100px;'><span style='display:block;width:100px'>" + item.one.text + "</span><img src=" + img + "></img></div>"
-                });
+                const myIcon = this._getIcon(item.one);
                 const marker = L.marker(item.latlng, { icon: myIcon }).addTo(this.map);
                 const that = this;
+                marker.customid = item.one.id;
                 marker.on('click', (e) => {
                     if (that.popup !== null) {
                         that.popup.remove();
