@@ -215,6 +215,7 @@
             setInterval(() => {
                 tempArray[0].lat += 0.1;
                 markerList.push(tempArray);
+                markerList.setPopupContent(new Date().getTime() + "");
             }, 2000);
         };
         let updateIcon = function () {

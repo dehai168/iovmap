@@ -119,9 +119,6 @@ export class MarkerList {
         if (element.id === this.popupId) {
             if (this.popup !== null) {
                 this.popup.setLatLng([element.lat, element.lng]);
-                if (this.clickCB) {
-                    this.clickCB(element.id);
-                }
             }
         }
     }
