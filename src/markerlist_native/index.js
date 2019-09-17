@@ -119,6 +119,21 @@ export class MarkerList_Native {
         this.markerList.length = 0;
     }
     /**
+     * 打开一个气泡
+     * @param {*} id 
+     */
+    openPopup(id) {
+        const index = this.markerList.findIndex(v => {
+            return v.customid === id;
+        });
+        if (index !== -1) {
+            const marker = this.markerList[index];
+            marker.fire('click', {
+                latlng: marker.getLatLng()
+            });
+        }
+    }
+    /**
      * 设定气泡内容
      * @param {*} htmlStr 
      */
