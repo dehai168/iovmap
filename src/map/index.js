@@ -207,6 +207,19 @@ export class Map {
         this.map.setZoom(zoom);
     }
     /**
+     * 设定地图给定的地点和缩放
+     * @param {*} point 经纬度
+     * @param {*} zoom 缩放等级
+     */
+    setView(point, zoom) {
+        if (typeof point === 'object') {
+            if (typeof zoom === 'string') {
+                zoom = parseInt(zoom);
+            }
+            this.map.setView(point, zoom);
+        }
+    }
+    /**
      * 全图
      */
     minZoom() {
