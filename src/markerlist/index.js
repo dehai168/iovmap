@@ -18,6 +18,7 @@
 import offline from "../assets/0.png";
 import online from "../assets/1.png";
 import alarm from "../assets/2.png";
+import onlinestop from "../assets/3.png";
 import m0 from "../assets/m0.png";
 import m1 from "../assets/m1.png";
 import m2 from "../assets/m2.png";
@@ -110,6 +111,9 @@ export class MarkerList {
         let img2 = new Image(24, 24);
         img2.src = alarm;
         this.imgList.push(img2);
+        let img3 = new Image(24, 24);
+        img3.src = onlinestop;
+        this.imgList.push(img3);
     }
     /**
      * 改变气泡位置
@@ -172,40 +176,51 @@ export class MarkerList {
      * 计算集群
      */
     _cluster() {
-        const basicSize = 34;
-        const maxZoom = 20;
+        const basicSize = 24;
+        const maxZoom = this.map.getMaxZoom();
         const zoom = this.map.getZoom();
         const size = this.map.getSize();
-        const viewBounds = L.bounds([0, 0], [size.x, size.y]);
-        const boxSize = Math.floor((maxZoom - zoom) / 2) * basicSize;
-        const xCount = Math.ceil(size.x / boxSize);
-        const yCount = Math.ceil(size.y / boxSize);
+        const viewBounds = L.bounds([0, 0], [size.x, size.y]);//视界范围
         const boxList = [];
-        for (let i = 0; i < xCount; i++) {
-            for (let j = 0; j < yCount; j++) {
-                const start = [i * boxSize, j * boxSize];
-                const end = [(i + 1) * boxSize, (j + 1) * boxSize];
-                const bounds = L.bounds(start, end);
-                boxList.push({
-                    bounds,
-                    list: [],
-                    one: null,
-                });
-                //this.ctx.strokeRect(start[0], start[1], end[0], end[1]);  //TODO test
+        if (maxZoom > zoom) { //只有当前层级比最大层级小才计算网格
+            const boxSize = (maxZoom - zoom) * basicSize; // Math.floor((maxZoom - zoom) / 2) * basicSize;
+            const xCount = Math.ceil(size.x / boxSize);
+            const yCount = Math.ceil(size.y / boxSize);
+
+            for (let i = 0; i < xCount; i++) {
+                for (let j = 0; j < yCount; j++) {
+                    const start = [i * boxSize, j * boxSize];
+                    const end = [(i + 1) * boxSize, (j + 1) * boxSize];
+                    const bounds = L.bounds(start, end);
+                    boxList.push({
+                        bounds,
+                        list: [],
+                        one: null,
+                    });
+                }
             }
         }
+        this.drawList.length = 0;
         this.list.forEach(element => {
             let point = this.map.latLngToContainerPoint([element.lat, element.lng]);//地理坐标点转换到容器像素点
             if (viewBounds.contains(point)) { //视界内的点进行绘制
-                boxList.forEach(item => {
-                    if (item.bounds.contains(point)) { //点在box内
-                        item.list.push(point);
-                        item.one = element;
-                    }
-                });
+                if (boxList.length > 0) { //需要聚合
+                    boxList.forEach(item => {
+                        if (item.bounds.contains(point)) { //点在box内
+                            item.list.push(point);
+                            item.one = element;
+                        }
+                    });
+                } else {//不需要聚合
+                    this.drawList.push({
+                        size: 1,
+                        latlng: [element.lat, element.lng],
+                        one: element,
+                    });
+                }
             }
         });
-        this.drawList.length = 0;
+        //需要聚合的点进行质心聚集
         boxList.forEach(item => {
             const size = item.list.length;
             if (size > 0) {

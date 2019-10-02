@@ -15,6 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+//离线
 import offline_0 from "../assets/0/0.png";
 import offline_1 from "../assets/0/1.png";
 import offline_2 from "../assets/0/2.png";
@@ -24,6 +25,7 @@ import offline_5 from "../assets/0/5.png";
 import offline_6 from "../assets/0/6.png";
 import offline_7 from "../assets/0/7.png";
 import offline_8 from "../assets/0/8.png";
+//在线行驶
 import online_0 from "../assets/1/0.png";
 import online_1 from "../assets/1/1.png";
 import online_2 from "../assets/1/2.png";
@@ -33,6 +35,7 @@ import online_5 from "../assets/1/5.png";
 import online_6 from "../assets/1/6.png";
 import online_7 from "../assets/1/7.png";
 import online_8 from "../assets/1/8.png";
+//告警
 import alarm_0 from "../assets/2/0.png";
 import alarm_1 from "../assets/2/1.png";
 import alarm_2 from "../assets/2/2.png";
@@ -42,6 +45,16 @@ import alarm_5 from "../assets/2/5.png";
 import alarm_6 from "../assets/2/6.png";
 import alarm_7 from "../assets/2/7.png";
 import alarm_8 from "../assets/2/8.png";
+//在线停车
+import onlinestop_0 from "../assets/3/0.png";
+import onlinestop_1 from "../assets/3/1.png";
+import onlinestop_2 from "../assets/3/2.png";
+import onlinestop_3 from "../assets/3/3.png";
+import onlinestop_4 from "../assets/3/4.png";
+import onlinestop_5 from "../assets/3/5.png";
+import onlinestop_6 from "../assets/3/6.png";
+import onlinestop_7 from "../assets/3/7.png";
+import onlinestop_8 from "../assets/3/8.png";
 import m0 from "../assets/m0.png";
 import m1 from "../assets/m1.png";
 import m2 from "../assets/m2.png";
@@ -87,6 +100,17 @@ export class MarkerList_Native {
                 alarm_6,
                 alarm_7,
                 alarm_8,
+            ],
+            [
+                onlinestop_0,
+                onlinestop_1,
+                onlinestop_2,
+                onlinestop_3,
+                onlinestop_4,
+                onlinestop_5,
+                onlinestop_6,
+                onlinestop_7,
+                onlinestop_8,
             ]
         ]; //车辆图像列表
         this.drawList = []; //绘制列表
@@ -179,39 +203,51 @@ export class MarkerList_Native {
      * 计算集群
      */
     _cluster() {
-        const basicSize = 34;
-        const maxZoom = 20;
+        const basicSize = 24;
+        const maxZoom = this.map.getMaxZoom();
         const zoom = this.map.getZoom();
         const size = this.map.getSize();
-        const viewBounds = L.bounds([0, 0], [size.x, size.y]);
-        const boxSize = Math.floor((maxZoom - zoom) / 2) * basicSize;
-        const xCount = Math.ceil(size.x / boxSize);
-        const yCount = Math.ceil(size.y / boxSize);
+        const viewBounds = L.bounds([0, 0], [size.x, size.y]);//视界范围
         const boxList = [];
-        for (let i = 0; i < xCount; i++) {
-            for (let j = 0; j < yCount; j++) {
-                const start = [i * boxSize, j * boxSize];
-                const end = [(i + 1) * boxSize, (j + 1) * boxSize];
-                const bounds = L.bounds(start, end);
-                boxList.push({
-                    bounds,
-                    list: [],
-                    one: null,
-                });
+        if (maxZoom > zoom) { //只有当前层级比最大层级小才计算网格
+            const boxSize = (maxZoom - zoom) * basicSize; // Math.floor((maxZoom - zoom) / 2) * basicSize;
+            const xCount = Math.ceil(size.x / boxSize);
+            const yCount = Math.ceil(size.y / boxSize);
+
+            for (let i = 0; i < xCount; i++) {
+                for (let j = 0; j < yCount; j++) {
+                    const start = [i * boxSize, j * boxSize];
+                    const end = [(i + 1) * boxSize, (j + 1) * boxSize];
+                    const bounds = L.bounds(start, end);
+                    boxList.push({
+                        bounds,
+                        list: [],
+                        one: null,
+                    });
+                }
             }
         }
+        this.drawList.length = 0;
         this.list.forEach(element => {
             let point = this.map.latLngToContainerPoint([element.lat, element.lng]);//地理坐标点转换到容器像素点
             if (viewBounds.contains(point)) { //视界内的点进行绘制
-                boxList.forEach(item => {
-                    if (item.bounds.contains(point)) { //点在box内
-                        item.list.push(point);
-                        item.one = element;
-                    }
-                });
+                if (boxList.length > 0) { //需要聚合
+                    boxList.forEach(item => {
+                        if (item.bounds.contains(point)) { //点在box内
+                            item.list.push(point);
+                            item.one = element;
+                        }
+                    });
+                } else {//不需要聚合
+                    this.drawList.push({
+                        size: 1,
+                        latlng: [element.lat, element.lng],
+                        one: element,
+                    });
+                }
             }
         });
-        this.drawList.length = 0;
+        //需要聚合的点进行质心聚集
         boxList.forEach(item => {
             const size = item.list.length;
             if (size > 0) {
