@@ -34,6 +34,10 @@
 
    npm run test
 
+## 发布
+
+   npm publish
+
 ## Demo
 
     [Demo](https://dehai.site/iovmap/demo.html)
