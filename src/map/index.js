@@ -57,7 +57,7 @@ export class Map {
                         maxZoom: 18,
                         minZoom: 5,
                         subdomains: [0, 1, 2, 3],
-                        attribution: "ⓒ 2019 Baidu",
+                        attribution: "ⓒ Baidu",
                         tms: true
                     }
                 );
@@ -69,7 +69,7 @@ export class Map {
                         maxZoom: 18,
                         minZoom: 5,
                         subdomains: [0, 1, 2, 3],
-                        attribution: "ⓒ 2019 Baidu",
+                        attribution: "ⓒ Baidu",
                         tms: true
                     }
                 );
@@ -81,7 +81,7 @@ export class Map {
                         maxZoom: 18,
                         minZoom: 5,
                         subdomains: [0, 1, 2],
-                        attribution: "ⓒ 2019 Baidu",
+                        attribution: "ⓒ Baidu",
                         tms: true
                     }
                 );
@@ -93,7 +93,7 @@ export class Map {
                         maxZoom: 18,
                         minZoom: 5,
                         subdomains: [0, 1, 2],
-                        attribution: "ⓒ 2019 Baidu",
+                        attribution: "ⓒ Baidu",
                         tms: true
                     }
                 );
@@ -105,7 +105,7 @@ export class Map {
                         maxZoom: 18,
                         minZoom: 5,
                         subdomains: [0, 1, 2],
-                        attribution: "ⓒ 2019 Baidu",
+                        attribution: "ⓒ Baidu",
                         tms: true
                     }
                 );
@@ -119,7 +119,7 @@ export class Map {
                 );
                 break;
             case "GMap_Sate":
-                mapLayer = new L.tileLayer('http://www.google.cn/maps/vt?lyrs=s@821&gl=cn&x={x}&y={y}&z={z}',
+                mapLayer = new L.tileLayer('http://mt{s}.google.cn/vt/lyrs=s@821&gl=cn&x={x}&y={y}&z={z}',
                     {
                         subdomains: [0, 1, 2, 3],
                         attribution: '© <a href="http://www.google.cn/maps">GoogleMap</a> contributors'

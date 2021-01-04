@@ -66,7 +66,7 @@ export class MarkerList_Native {
     constructor(map, cb) {
         this.map = map;
         this.clickCB = cb;
-        this.list = [];  //数据列表
+        this.list = []; //数据列表
         this.imgList = [
             [
                 offline_0,
@@ -167,6 +167,19 @@ export class MarkerList_Native {
         }
     }
     /**
+     * 设定图片地址
+     * @param {*} array 
+     */
+    setImageSrc(array) {
+        if (array.length > 0) {
+            this.imgList.length = 0;
+        }
+        for (let index = 0; index < array.length; index++) {
+            const element = array[index];
+            this.imgList.push(element);
+        }
+    }
+    /**
      * 改变气泡位置
      * @param {*} element 
      */
@@ -207,7 +220,7 @@ export class MarkerList_Native {
         const maxZoom = this.map.getMaxZoom();
         const zoom = this.map.getZoom();
         const size = this.map.getSize();
-        const viewBounds = L.bounds([0, 0], [size.x, size.y]);//视界范围
+        const viewBounds = L.bounds([0, 0], [size.x, size.y]); //视界范围
         const boxList = [];
         if (maxZoom > zoom) { //只有当前层级比最大层级小才计算网格
             const boxSize = (maxZoom - zoom) * basicSize; // Math.floor((maxZoom - zoom) / 2) * basicSize;
@@ -229,7 +242,7 @@ export class MarkerList_Native {
         }
         this.drawList.length = 0;
         this.list.forEach(element => {
-            let point = this.map.latLngToContainerPoint([element.lat, element.lng]);//地理坐标点转换到容器像素点
+            let point = this.map.latLngToContainerPoint([element.lat, element.lng]); //地理坐标点转换到容器像素点
             if (viewBounds.contains(point)) { //视界内的点进行绘制
                 if (boxList.length > 0) { //需要聚合
                     boxList.forEach(item => {
@@ -238,7 +251,7 @@ export class MarkerList_Native {
                             item.one = element;
                         }
                     });
-                } else {//不需要聚合
+                } else { //不需要聚合
                     this.drawList.push({
                         size: 1,
                         latlng: [element.lat, element.lng],
@@ -256,7 +269,7 @@ export class MarkerList_Native {
                     obj[next.x] ? '' : obj[next.x] = true && item.push(next);
                     return item;
                 }, []);
-                const center = centroid(item.list);//获取多边形质心
+                const center = centroid(item.list); //获取多边形质心
                 const latlng = this.map.containerPointToLatLng([center.x, center.y]);
                 this.drawList.push({
                     size,
@@ -304,9 +317,11 @@ export class MarkerList_Native {
         this.drawList.forEach(item => {
             if (item.size === 0) {
 
-            } else if (item.size === 1) {//常规绘制
+            } else if (item.size === 1) { //常规绘制
                 const myIcon = this._getIcon(item.one);
-                const marker = L.marker(item.latlng, { icon: myIcon }).addTo(this.map);
+                const marker = L.marker(item.latlng, {
+                    icon: myIcon
+                }).addTo(this.map);
                 const that = this;
                 marker.customid = item.one.id;
                 marker.on('click', (e) => {
@@ -325,7 +340,7 @@ export class MarkerList_Native {
                 this.markerList.push(marker);
                 //气泡
                 this._setPopupLatLng(item.one);
-            } else {//集群绘制
+            } else { //集群绘制
                 let style = "text-align:center;";
                 if (item.size <= 1000) {
                     style += "margin-top:-26px;margin-left:-26px;width:53px;height:52px;line-height:52px;background:url(" + m0 + ") no-repeat;"
@@ -343,7 +358,9 @@ export class MarkerList_Native {
                     className: 'myIconClass',
                     html: "<div style='" + style + "'>" + item.size + "</div>"
                 });
-                const marker = L.marker(item.latlng, { icon: myIcon }).addTo(this.map);
+                const marker = L.marker(item.latlng, {
+                    icon: myIcon
+                }).addTo(this.map);
                 this.markerList.push(marker);
             }
         });

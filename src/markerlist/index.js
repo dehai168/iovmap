@@ -31,8 +31,9 @@ export class MarkerList {
         this.map = map;
         this.canvas = canvas;
         this.clickCB = cb;
-        this.list = [];  //数据列表
+        this.list = []; //数据列表
         this.imgList = []; //车辆图像列表
+        this.imgsrcList = [offline, online, alarm, onlinestop]; //车辆图标加载地址
         this.boundsList = []; //车辆区域列表
         this.drawList = []; //绘制列表
         this.popup = null;
@@ -74,6 +75,21 @@ export class MarkerList {
         }
     }
     /**
+     * 设定图片地址
+     * @param {*} array 
+     */
+    setImageSrc(array) {
+        if (array.length > 0) {
+            this.imgsrcList.length = 0;
+            for (let index = 0; index < array.length; index++) {
+                const element = array[index];
+                this.imgsrcList.push(element);
+            }
+            this.imgList.length = 0;
+            this._cache();
+        }
+    }
+    /**
      * 初始化画布
      */
     _init() {
@@ -102,18 +118,12 @@ export class MarkerList {
      * 缓存图片
      */
     _cache() {
-        let img0 = new Image(24, 24);
-        img0.src = offline;
-        this.imgList.push(img0);
-        let img1 = new Image(24, 24);
-        img1.src = online;
-        this.imgList.push(img1);
-        let img2 = new Image(24, 24);
-        img2.src = alarm;
-        this.imgList.push(img2);
-        let img3 = new Image(24, 24);
-        img3.src = onlinestop;
-        this.imgList.push(img3);
+        for (let index = 0; index < this.imgsrcList.length; index++) {
+            const element = this.imgsrcList[index];
+            let img = new Image(24, 24);
+            img.src = element;
+            this.imgList.push(img);
+        }
     }
     /**
      * 改变气泡位置
@@ -138,13 +148,14 @@ export class MarkerList {
             that.boundsList.forEach(element => {
                 if (element.bounds.contains(point)) {
                     let latlng = that.map.containerPointToLatLng(point);
-                    if (that.popup !== null) {
-                        that.popup.remove();
+                    if (that.popup === null) {
+                        that.popup = L.popup()
+                            .setLatLng(latlng)
+                            .setContent('...加载中...')
+                            .openOn(that.map);
+                    } else {
+                        that.popup.setLatLng(latlng);
                     }
-                    that.popup = L.popup()
-                        .setLatLng(latlng)
-                        .setContent('...加载中...')
-                        .openOn(that.map);
                     that.popupId = element.ele.id;
                     if (that.clickCB) {
                         that.clickCB(element.ele.id);
@@ -165,7 +176,6 @@ export class MarkerList {
      * 重绘
      */
     _reDraw() {
-        let that = this;
         this._clear();
         if (this.list && this.list.length > 0) {
             this._cluster();
@@ -180,7 +190,7 @@ export class MarkerList {
         const maxZoom = this.map.getMaxZoom();
         const zoom = this.map.getZoom();
         const size = this.map.getSize();
-        const viewBounds = L.bounds([0, 0], [size.x, size.y]);//视界范围
+        const viewBounds = L.bounds([0, 0], [size.x, size.y]); //视界范围
         const boxList = [];
         if (maxZoom > zoom) { //只有当前层级比最大层级小才计算网格
             const boxSize = (maxZoom - zoom) * basicSize; // Math.floor((maxZoom - zoom) / 2) * basicSize;
@@ -202,7 +212,7 @@ export class MarkerList {
         }
         this.drawList.length = 0;
         this.list.forEach(element => {
-            let point = this.map.latLngToContainerPoint([element.lat, element.lng]);//地理坐标点转换到容器像素点
+            let point = this.map.latLngToContainerPoint([element.lat, element.lng]); //地理坐标点转换到容器像素点
             if (viewBounds.contains(point)) { //视界内的点进行绘制
                 if (boxList.length > 0) { //需要聚合
                     boxList.forEach(item => {
@@ -211,7 +221,7 @@ export class MarkerList {
                             item.one = element;
                         }
                     });
-                } else {//不需要聚合
+                } else { //不需要聚合
                     this.drawList.push({
                         size: 1,
                         latlng: [element.lat, element.lng],
@@ -229,7 +239,7 @@ export class MarkerList {
                     obj[next.x] ? '' : obj[next.x] = true && item.push(next);
                     return item;
                 }, []);
-                const center = centroid(item.list);//获取多边形质心
+                const center = centroid(item.list); //获取多边形质心
                 const latlng = this.map.containerPointToLatLng([center.x, center.y]);
                 this.drawList.push({
                     size,
@@ -246,7 +256,7 @@ export class MarkerList {
         this.drawList.forEach(item => {
             if (item.size === 0) {
 
-            } else if (item.size === 1) {//常规绘制
+            } else if (item.size === 1) { //常规绘制
                 let direction = parseInt(item.one.direction ? item.one.direction : 0); // 方向
                 let img = this.imgList[item.one.state];
                 let point = this.map.latLngToContainerPoint(item.latlng);
@@ -277,14 +287,17 @@ export class MarkerList {
                 this.ctx.strokeStyle = '#000000';
                 this.ctx.strokeText(item.one.text, x, y + height, width);
                 //范围列表
-                let bounds = L.bounds([[x, y], [point.x + img.width / 2, point.y + img.height / 2]]);
+                let bounds = L.bounds([
+                    [x, y],
+                    [point.x + img.width / 2, point.y + img.height / 2]
+                ]);
                 this.boundsList.push({
                     ele: item.one,
                     bounds: bounds,
                 });
                 //气泡
                 this._setPopupLatLng(item.one);
-            } else {//集群绘制
+            } else { //集群绘制
                 const img = new Image();
                 const point = this.map.latLngToContainerPoint(item.latlng);
                 const that = this;

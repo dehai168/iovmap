@@ -1,6 +1,6 @@
 {
   "name": "iovmap",
-  "version": "1.2.8",
+  "version": "1.3.0",
   "description": "a map sdk base on leaflet",
   "main": "index.js",
   "scripts": {
@@ -40,7 +40,7 @@
     "webpack-dev-server": "^3.2.0"
   },
   "dependencies": {
-    "leaflet": "^1.4.0",
+    "leaflet": "^1.7.1",
     "polygon-centroid": "^1.1.0",
     "proj4leaflet": "^1.0.2"
   }
