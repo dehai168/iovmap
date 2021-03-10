@@ -234,6 +234,40 @@ export class Map {
         this.map.setZoom(zoom);
     }
     /**
+     * 放大
+     */
+    zoomIn() {
+        this.map.zoomIn();
+    }
+    /**
+     * 缩小
+     */
+    zoomOut() {
+        this.map.zoomOut();
+    }
+    /**
+     * 定位
+     */
+    locate() {
+        this.map.locate({
+            setView: true,
+            maxZoom: 16
+        });
+    }
+    /**
+     * 停止定位
+     */
+    stopLocate() {
+        this.map.stopLocate();
+    }
+    /**
+     * 计算面积
+     */
+    area() {
+
+    }
+
+    /**
      * 拉框缩小
      */
     boxIn() {
