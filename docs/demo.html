@@ -45,12 +45,14 @@
         <button onclick="marker_load()">加载marker</button>
         <button onclick="marker_edit()">编辑marker</button>
         <button onclick="marker_change()">改变marker外形</button>
+        <button onclick="marker_changeInfowin()">改变marker气泡内容</button>
         <button onclick="marker_moveTo()">移动marker</button>
         <button onclick="marker_remove()">移除marker</button>
     </div>
     <div style="border:1px solid gray;margin-top: 10px;padding: 5px">
         <button onclick="initMarkerList()">初始化markerList(cnavas)</button>
         <button onclick="initMarkerList2()">初始化markerList(native)</button>
+        <button onclick="setImageSrc()">更新marker图标</button>
         <button onclick="push()">增加markerList内容</button>
         <button onclick="updateIcon()">更新其中一个图标</button>
         <button onclick="openPopup()">打开其中一个气泡</button>
@@ -162,7 +164,9 @@
         let marker_load = function () {
             let start = line[0];
             iovMarker = new IOVMap.Marker(iovMap.map);
-            iovMarker.load(start.lat, start.lng, './assets/images/circle_blue_16_ns.png', [16, 16], [8, 8], '异常停车点');
+            iovMarker.load(start.lat, start.lng, './assets/images/circle_blue_16_ns.png', [16, 16], [8, 8], '异常停车点','我是infowin',function(e){
+                console.log(e);
+            });
         };
         let marker_edit = function () {
             let start = line[50];
@@ -174,6 +178,9 @@
         let marker_change = function () {
             iovMarker.change('./assets/images/circle_black_16_ns.png');
         };
+        let marker_changeInfowin=function(){
+            iovMarker.changeInfoWin("i am test infowin");
+        };
         let marker_moveTo = function () {
             let end = line[line.length - 1];
             iovMarker.moveTo(end.lat, end.lng);
@@ -182,7 +189,9 @@
             iovMarker.remove();
         }
         // markerList
+        let markerListFlag=false;
         let initMarkerList = function () {
+            markerListFlag=false;
             let canvas = iovMap.createCanvasPane();
             markerList = new IOVMap.MarkerList(iovMap.map, canvas, function (id) {
                 console.log(id);
@@ -191,11 +200,27 @@
             });
         };
         let initMarkerList2 = function () {
+            markerListFlag=true;
             markerList = new IOVMap.MarkerList_Native(iovMap.map, function (id) {
                 console.log(id);
                 let now = new Date();
                 markerList.setPopupContent(now.getTime() + "");
             });
+        };
+        let setImageSrc=function(){
+            if(!markerListFlag){
+                markerList.setImageSrc([
+                './assets/images/offline.gif',
+                './assets/images/online.gif',
+                './assets/images/alarm.gif',
+                ]);
+            }else{
+                markerList.setImageSrc([
+                    ['./assets/images/offline.gif','./assets/images/offline.gif','./assets/images/offline.gif','./assets/images/offline.gif','./assets/images/offline.gif'],
+                    ['./assets/images/online.gif','./assets/images/online.gif','./assets/images/online.gif','./assets/images/online.gif','./assets/images/online.gif'],
+                    ['./assets/images/alarm.gif','./assets/images/alarm.gif','./assets/images/alarm.gif','./assets/images/alarm.gif','./assets/images/alarm.gif','./assets/images/alarm.gif']
+                ]);
+            }
         };
         let push = function () {
             let temp =
@@ -221,7 +246,7 @@
                 tempArray[0].lat += 0.1;
                 markerList.push(tempArray);
                 markerList.setPopupContent(new Date().getTime() + "");
-            }, 2000);
+            }, 5000);
         };
         let updateIcon = function () {
             let one = {

@@ -63,15 +63,22 @@ export class Marker {
         let clickEvent = function (e) {
             that.latlng = [e.latlng.lat, e.latlng.lng];
             // 绘制marker
-            that.marker = L.marker(that.latlng, { icon: that.markerIcon, draggable: true });
+            that.marker = L.marker(that.latlng, {
+                icon: that.markerIcon,
+                draggable: true
+            });
             that.marker.addTo(that.map);
             that.marker.on('drag', dragEvent);
             // 确认marker
-            that.okMarker = L.marker(that.latlng, { icon: that.okIcon });
+            that.okMarker = L.marker(that.latlng, {
+                icon: that.okIcon
+            });
             that.okMarker.on('click', okClickEvent);
             that.okMarker.addTo(that.map);
             // 取消marker
-            that.cancelMarker = L.marker(that.latlng, { icon: that.cancelIcon });
+            that.cancelMarker = L.marker(that.latlng, {
+                icon: that.cancelIcon
+            });
             that.cancelMarker.on('click', cancelClickEvent);
             that.cancelMarker.addTo(that.map);
             // 注销事件
@@ -98,15 +105,22 @@ export class Marker {
             that.cancelMarker.setLatLng(latlng);
         };
         // 绘制marker
-        that.marker = L.marker(that.latlng, { icon: that.markerIcon, draggable: true });
+        that.marker = L.marker(that.latlng, {
+            icon: that.markerIcon,
+            draggable: true
+        });
         that.marker.addTo(that.map);
         that.marker.on('drag', dragEvent);
         // 确认marker
-        that.okMarker = L.marker(that.latlng, { icon: that.okIcon });
+        that.okMarker = L.marker(that.latlng, {
+            icon: that.okIcon
+        });
         that.okMarker.on('click', okClickEvent);
         that.okMarker.addTo(that.map);
         // 取消marker
-        that.cancelMarker = L.marker(that.latlng, { icon: that.cancelIcon });
+        that.cancelMarker = L.marker(that.latlng, {
+            icon: that.cancelIcon
+        });
         that.cancelMarker.on('click', cancelClickEvent);
         that.cancelMarker.addTo(that.map);
     }
@@ -118,8 +132,9 @@ export class Marker {
      * @param {*} size 
      * @param {*} anchor 
      * @param {*} tip 
+     * @param {*} infowin
      */
-    load(lat, lng, imgPath, size, anchor, tip) {
+    load(lat, lng, imgPath, size, anchor, tip, infowin, infowinOpenEvent) {
         this.latlng = [lat, lng];
         if (imgPath) {
             let myIcon = L.icon({
@@ -127,13 +142,23 @@ export class Marker {
                 iconSize: size,
                 iconAnchor: anchor,
             });
-            this.marker = L.marker(this.latlng, { icon: myIcon });
+            this.marker = L.marker(this.latlng, {
+                icon: myIcon
+            });
         } else {
             this.marker = L.marker(this.latlng);
         }
         this.marker.addTo(this.map);
         if (tip) {
             this.marker.bindTooltip(tip).openTooltip();
+        }
+        if (infowin) {
+            this.marker.bindPopup(infowin).openPopup();
+            if (typeof infowinOpenEvent === 'function') {
+                this.marker.on('popupopen', function (e) {
+                    infowinOpenEvent(tip || '');
+                });
+            }
         }
     }
     /**
@@ -148,6 +173,16 @@ export class Marker {
                 iconAnchor: anchor,
             });
             this.marker.setIcon(myIcon);
+        }
+    }
+    /**
+     * 改变infowin内容
+     * @param {*} infowin 
+     */
+    changeInfoWin(infowin) {
+        if (infowin) {
+            this.marker.setPopupContent(infowin);
+            this.marker.update();
         }
     }
     /**
