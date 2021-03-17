@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>科学城信息汇总</title>
+    <script src="https://webapi.amap.com/maps?v=1.4.15&key=80a30750f35b1511d42fd6e42ce51a99"></script>
+  </head>
+
+  <body onload="loadMap()">
+    <div id="container" style="width: 1024px; height: 768px; float: left"></div>
+    <div style="float: left">
+      <video src="https://dehai167-dd.oss-cn-shanghai.aliyuncs.com/github/iovmap/kexuecheng.mp4" controls autoplay width="400"></video>
+    </div>
+    <div style="float: left">
+      <img src="https://dehai167-dd.oss-cn-shanghai.aliyuncs.com/github/iovmap/xmgs.jfif" alt="" srcset="" />
+    </div>
+    <script>
+      var map = null;
+      var list = [
+        {
+          type: 1, // 1 marker  2 line
+          title: "科学谷",
+          lat: 106.361346,
+          lng: 29.547763,
+          img: "https://dehai167-dd.oss-cn-shanghai.aliyuncs.com/github/iovmap/kexuegu.jpeg",
+        },
+        {
+          type: 1,
+          title: "科学公园",
+          lat: 106.360981,
+          lng: 29.586657,
+          img: "https://dehai167-dd.oss-cn-shanghai.aliyuncs.com/github/iovmap/kexuegongyuan.jpeg",
+        },
+        {
+          type: 1,
+          title: "科学会堂",
+          lat: 106.353041,
+          lng: 29.536711,
+          img: "https://dehai167-dd.oss-cn-shanghai.aliyuncs.com/github/iovmap/kexuhuitang.jfif",
+        },
+        {
+          type: 1,
+          title: "大学城复线隧道(起)",
+          lat: 106.396043,
+          lng: 29.565308,
+          img: "https://dehai167-dd.oss-cn-shanghai.aliyuncs.com/github/iovmap/dxcfxsd.jfif",
+        },
+        {
+          type: 1,
+          title: "大学城复线隧道(终)",
+          lat: 106.437585,
+          lng: 29.551579,
+          img: "https://dehai167-dd.oss-cn-shanghai.aliyuncs.com/github/iovmap/dxcfxsd.jfif",
+        },
+        {
+          type: 1,
+          title: "成渝中线科学城站(疑似7号线+17号线交会物流园站)",
+          lat: 106.365265,
+          lng: 29.656411,
+          img: "https://dehai167-dd.oss-cn-shanghai.aliyuncs.com/github/iovmap/kxcz.png",
+        },
+        {
+          type: 1,
+          title: "7号线",
+          lat: 106.362865,
+          lng: 29.609642,
+          img: "https://dehai167-dd.oss-cn-shanghai.aliyuncs.com/github/iovmap/7.jfif",
+        },
+        {
+          type: 1,
+          title: "科学城第一中学",
+          lat: 106.367742,
+          lng: 29.477755,
+          img: "https://dehai167-dd.oss-cn-shanghai.aliyuncs.com/github/iovmap/kxcdyzx.jpg",
+        },
+        {
+          type: 1,
+          title: "永祥实验中学",
+          lat: 106.371321,
+          lng: 29.631953,
+          img: "https://dehai167-dd.oss-cn-shanghai.aliyuncs.com/github/iovmap/yxsyzx.jpg",
+        },
+        {
+          type: 1,
+          title: "西丰实验小学",
+          lat: 106.368274,
+          lng: 29.606989,
+          img: "https://dehai167-dd.oss-cn-shanghai.aliyuncs.com/github/iovmap/xfsyxx.jpg",
+        },
+        {
+          type: 1,
+          title: "绿地重庆全球贸易港",
+          lat: 106.374324,
+          lng: 29.659818,
+          img: "https://dehai167-dd.oss-cn-shanghai.aliyuncs.com/github/iovmap/ldqqmyg.webp",
+        },
+        {
+          type: 1,
+          title: "重庆高新区管委会",
+          lat: 106.336007,
+          lng: 29.512836,
+          img: "https://dehai167-dd.oss-cn-shanghai.aliyuncs.com/github/iovmap/gxqgwh.jpg",
+        },
+        {
+          type: 1,
+          title: "高新区信创产业园",
+          lat: 106.354009,
+          lng: 29.518799,
+          img: "https://dehai167-dd.oss-cn-shanghai.aliyuncs.com/github/iovmap/xccysfjd.jpeg",
+        },
+        {
+          type:1,
+          title:"利嘉嘉陵江大桥",
+          lat:106.462043,
+          lng:29.664292,
+          img:"https://dehai167-dd.oss-cn-shanghai.aliyuncs.com/github/iovmap/ljjljdq.jfif"
+        },
+        {
+          type:1,
+          title:"光大人工智能产业基地",
+          lat:106.325082,
+          lng:29.512035,
+          img:""
+        }
+      ];
+      function loadMap() {
+        map = new AMap.Map("container", {
+          zoom: 10, //级别
+          center: [106.351239, 29.605493], //中心点坐标
+          viewMode: "3D", //使用3D视图
+        });
+
+        loadMarker();
+      }
+      function loadMarker() {
+        list.forEach((element) => {
+          if (element.type === 1) {
+            var marker = new AMap.Marker({
+              title: element.title,
+              position: [element.lat, element.lng],
+              label: {
+                content: element.title,
+                offset: new AMap.Pixel(8, -10),
+              },
+            });
+            var infowindow = new AMap.InfoWindow({
+              content: "<img src='" + element.img + "' width='100%'>",
+              offset: new AMap.Pixel(8, -10),
+            });
+            map.add(marker);
+            AMap.event.addListener(marker, "click", function () {
+              infowindow.open(map, marker.getPosition());
+            });
+          }
+        });
+      }
+    </script>
+  </body>
+</html>
