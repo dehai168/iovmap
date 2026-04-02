@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>地图坐标采集工具</title>
+    <style>
+        :root {
+            --bg: #eef3e7;
+            --panel: rgba(255, 252, 244, 0.92);
+            --panel-strong: #fffdf7;
+            --line: #d5dfcb;
+            --text: #203126;
+            --muted: #5b6d61;
+            --accent: #1f7a52;
+            --accent-dark: #125338;
+            --danger: #b84736;
+            --shadow: 0 18px 50px rgba(32, 49, 38, 0.12);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+            color: var(--text);
+            background:
+                radial-gradient(circle at top left, rgba(110, 163, 120, 0.24), transparent 32%),
+                radial-gradient(circle at bottom right, rgba(229, 191, 131, 0.2), transparent 28%),
+                linear-gradient(160deg, #f6f3eb 0%, var(--bg) 52%, #e3eddc 100%);
+        }
+
+        .page {
+            max-width: 1380px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        .hero {
+            display: flex;
+            justify-content: space-between;
+            gap: 24px;
+            align-items: flex-end;
+            margin-bottom: 18px;
+        }
+
+        .hero h1 {
+            margin: 0;
+            font-size: clamp(28px, 4vw, 42px);
+            letter-spacing: 0.02em;
+        }
+
+        .hero p {
+            margin: 8px 0 0;
+            max-width: 720px;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 360px;
+            gap: 20px;
+        }
+
+        .panel {
+            background: var(--panel);
+            border: 1px solid rgba(140, 155, 134, 0.22);
+            border-radius: 22px;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(10px);
+        }
+
+        .controls {
+            padding: 18px;
+        }
+
+        .section+.section {
+            margin-top: 18px;
+            padding-top: 18px;
+            border-top: 1px solid var(--line);
+        }
+
+        .section h2 {
+            margin: 0 0 12px;
+            font-size: 16px;
+        }
+
+        .hint {
+            margin: 0 0 12px;
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .grid {
+            display: grid;
+            gap: 12px;
+        }
+
+        .grid.two {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        label {
+            display: grid;
+            gap: 6px;
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        input {
+            width: 100%;
+            padding: 11px 12px;
+            border: 1px solid rgba(110, 125, 112, 0.28);
+            border-radius: 12px;
+            background: var(--panel-strong);
+            color: var(--text);
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        input:focus {
+            border-color: rgba(31, 122, 82, 0.65);
+            box-shadow: 0 0 0 3px rgba(31, 122, 82, 0.12);
+        }
+
+        .actions {
+            display: grid;
+            gap: 10px;
+        }
+
+        .actions.two {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        button {
+            border: 0;
+            border-radius: 14px;
+            padding: 12px 14px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: transform 0.16s ease, box-shadow 0.16s ease, opacity 0.16s ease;
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+        }
+
+        button.primary {
+            color: #fff;
+            background: linear-gradient(135deg, var(--accent) 0%, #2e8f64 100%);
+            box-shadow: 0 12px 24px rgba(31, 122, 82, 0.18);
+        }
+
+        button.secondary {
+            color: var(--text);
+            background: #edf3ea;
+        }
+
+        button.danger {
+            color: #fff;
+            background: linear-gradient(135deg, #c85c4d 0%, var(--danger) 100%);
+        }
+
+        button:disabled {
+            cursor: not-allowed;
+            opacity: 0.58;
+            transform: none;
+        }
+
+        .status {
+            margin-top: 12px;
+            min-height: 22px;
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        .status.error {
+            color: var(--danger);
+        }
+
+        .status.success {
+            color: var(--accent-dark);
+        }
+
+        .map-card {
+            position: relative;
+            overflow: hidden;
+            min-height: 720px;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+            min-height: 720px;
+        }
+
+        .map-badge {
+            position: absolute;
+            left: 18px;
+            top: 18px;
+            z-index: 10;
+            padding: 10px 12px;
+            border-radius: 14px;
+            background: rgba(255, 253, 247, 0.92);
+            border: 1px solid rgba(140, 155, 134, 0.25);
+            box-shadow: 0 8px 24px rgba(32, 49, 38, 0.1);
+            font-size: 13px;
+            line-height: 1.55;
+        }
+
+        .map-badge strong {
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .point-chip {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--accent);
+            color: #fff;
+            font-weight: 700;
+            font-size: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.92);
+            box-shadow: 0 6px 16px rgba(31, 122, 82, 0.25);
+        }
+
+        @media (max-width: 1024px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+
+            .map-card,
+            #map {
+                min-height: 560px;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .page {
+                padding: 14px;
+            }
+
+            .hero {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .grid.two,
+            .actions.two {
+                grid-template-columns: 1fr;
+            }
+
+            .map-card,
+            #map {
+                min-height: 460px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="page">
+        <section class="hero">
+            <div>
+                <h1>地图坐标采集工具</h1>
+                <p>输入高德地图配置后加载地图，点击开始绘制即可采集线路坐标。支持拖动节点微调、点击线段中间插入新点，以及将 GCJ-02 坐标转换为 WGS84 后导出 CSV。</p>
+            </div>
+        </section>
+
+        <section class="layout">
+            <section class="panel map-card">
+                <div class="map-badge">
+                    <strong>交互规则</strong>
+                    单击新增节点<br />
+                    双击起点闭合轨迹<br />
+                    拖动节点调整线路
+                </div>
+                <div id="map"></div>
+            </section>
+
+            <aside class="panel controls">
+                <div class="section">
+                    <h2>地图配置</h2>
+                    <p class="hint">可直接修改页面脚本中的默认变量，也可以在这里输入后点击加载地图。</p>
+                    <div class="grid">
+                        <label>
+                            AMap Key
+                            <input id="amapKey" type="password" placeholder="请输入高德地图 AMap Key" />
+                        </label>
+                        <label>
+                            AMap Security Code
+                            <input id="amapSecurityCode" type="password" placeholder="请输入高德地图安全密钥" />
+                        </label>
+                    </div>
+                    <div class="actions" style="margin-top: 12px;">
+                        <button id="loadMapButton" class="primary">加载地图</button>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2>导出信息</h2>
+                    <div class="grid two">
+                        <label>
+                            道路名称
+                            <input id="roadName" type="text" placeholder="请输入道路名称" />
+                        </label>
+                        <label>
+                            道路编号
+                            <input id="roadCode" type="text" placeholder="请输入道路编号" />
+                        </label>
+                        <label>
+                            路段名称
+                            <input id="segmentName" type="text" placeholder="请输入路段名称" />
+                        </label>
+                        <label>
+                            路段编号
+                            <input id="segmentCode" type="text" placeholder="请输入路段编号" />
+                        </label>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2>绘制操作</h2>
+                    <p class="hint">开始绘制后：单击地图新增点位；移动鼠标可预览虚线；双击起点可闭合轨迹；点击任意线段可在中间插入一个可拖动点。</p>
+                    <div class="actions two">
+                        <button id="startDrawButton" class="primary" disabled>开始绘制</button>
+                        <button id="clearButton" class="secondary" disabled>清理绘制</button>
+                    </div>
+                    <div class="actions" style="margin-top: 10px;">
+                        <button id="exportButton" class="danger" disabled>导出路径 CSV</button>
+                    </div>
+                    <div id="status" class="status">请先配置高德地图 Key 和 Security Code 并加载地图。</div>
+                </div>
+            </aside>
+        </section>
+    </div>
+    <script>
+        const PRESET_AMAP_KEY = ''
+        const PRESET_AMAP_SECURITY_CODE = ''
+
+        const state = {
+            map: null,
+            drawEnabled: false,
+            closed: false,
+            points: [],
+            markers: [],
+            segmentLines: [],
+            previewLine: null,
+            mapLoaded: false,
+            mapLoading: false,
+            loadedConfig: null,
+            pendingMapClickTimer: null,
+            suppressMapClickUntil: 0,
+        }
+
+        const elements = {
+            amapKey: document.getElementById('amapKey'),
+            amapSecurityCode: document.getElementById('amapSecurityCode'),
+            roadName: document.getElementById('roadName'),
+            roadCode: document.getElementById('roadCode'),
+            segmentName: document.getElementById('segmentName'),
+            segmentCode: document.getElementById('segmentCode'),
+            loadMapButton: document.getElementById('loadMapButton'),
+            startDrawButton: document.getElementById('startDrawButton'),
+            clearButton: document.getElementById('clearButton'),
+            exportButton: document.getElementById('exportButton'),
+            status: document.getElementById('status'),
+        }
+
+        elements.amapKey.value = PRESET_AMAP_KEY
+        elements.amapSecurityCode.value = PRESET_AMAP_SECURITY_CODE
+
+        elements.loadMapButton.addEventListener('click', () => {
+            const config = getMapConfig()
+            if (!config) {
+                return
+            }
+            initializeMap(config)
+        })
+
+        elements.startDrawButton.addEventListener('click', () => {
+            if (!state.map) {
+                setStatus('请先加载地图。', 'error')
+                return
+            }
+            if (state.drawEnabled || state.points.length > 0 || state.closed) {
+                setStatus('当前已有绘制内容。请先清理后再开始新的绘制。', 'error')
+                return
+            }
+            state.drawEnabled = true
+            state.closed = false
+            elements.startDrawButton.disabled = true
+            redrawSegmentsOnly()
+            syncPreviewLine([])
+            setStatus('绘制已开启，单击地图新增节点。', 'success')
+        })
+
+        elements.clearButton.addEventListener('click', () => {
+            resetDrawing()
+            setStatus('已清理当前绘制内容。', 'success')
+        })
+
+        elements.exportButton.addEventListener('click', () => {
+            exportCsv()
+        })
+
+        if (PRESET_AMAP_KEY && PRESET_AMAP_SECURITY_CODE) {
+            initializeMap({ key: PRESET_AMAP_KEY, securityCode: PRESET_AMAP_SECURITY_CODE })
+        }
+
+        function getMapConfig() {
+            const key = elements.amapKey.value.trim()
+            const securityCode = elements.amapSecurityCode.value.trim()
+
+            if (!key || !securityCode) {
+                setStatus('AMap Key 和 Security Code 都必须填写。', 'error')
+                return null
+            }
+
+            return { key, securityCode }
+        }
+
+        function initializeMap(config) {
+            if (state.mapLoading) {
+                setStatus('地图脚本加载中，请稍候。', 'success')
+                return
+            }
+
+            if (state.mapLoaded) {
+                const sameConfig = state.loadedConfig && state.loadedConfig.key === config.key && state.loadedConfig.securityCode === config.securityCode
+                if (!sameConfig) {
+                    setStatus('地图脚本已按当前配置加载。如需切换 Key 或 Security Code，请刷新页面后重新加载。', 'error')
+                    return
+                }
+                setStatus('地图已加载，可以开始绘制。', 'success')
+                return
+            }
+
+            window._AMapSecurityConfig = { securityJsCode: config.securityCode }
+            state.mapLoading = true
+            const script = document.createElement('script')
+            script.src = 'https://webapi.amap.com/maps?v=2.0&key=' + encodeURIComponent(config.key) + '&plugin=AMap.Scale,AMap.ToolBar'
+            script.async = true
+            script.onload = () => {
+                state.mapLoading = false
+                state.mapLoaded = true
+                state.loadedConfig = config
+                createMapInstance()
+            }
+            script.onerror = () => {
+                state.mapLoading = false
+                setStatus('地图脚本加载失败，请检查高德地图配置是否正确。', 'error')
+            }
+            document.body.appendChild(script)
+        }
+
+        function createMapInstance() {
+            if (!window.AMap) {
+                setStatus('未检测到高德地图 JS API。', 'error')
+                return
+            }
+
+            state.map = new AMap.Map('map', {
+                zoom: 14,
+                center: [113.30358220, 23.39859703],
+                resizeEnable: true,
+                doubleClickZoom: false,
+                viewMode: '2D',
+            })
+
+            state.map.addControl(new AMap.Scale())
+            state.map.addControl(new AMap.ToolBar())
+
+            state.previewLine = new AMap.Polyline({
+                path: [],
+                strokeColor: '#1f7a52',
+                strokeOpacity: 0.8,
+                strokeWeight: 3,
+                strokeStyle: 'dashed',
+                lineDash: [8, 8],
+                zIndex: 40,
+                showDir: false,
+            })
+            state.map.add(state.previewLine)
+            state.previewLine.hide()
+
+            state.map.on('click', onMapClick)
+            state.map.on('mousemove', onMapMouseMove)
+
+            elements.startDrawButton.disabled = false
+            elements.clearButton.disabled = false
+            elements.exportButton.disabled = false
+            setStatus('地图已加载，可以开始绘制。', 'success')
+        }
+
+        function onMapClick(event) {
+            if (!state.drawEnabled || state.closed) {
+                return
+            }
+
+            if (Date.now() < state.suppressMapClickUntil) {
+                return
+            }
+
+            clearPendingMapClick()
+            state.pendingMapClickTimer = window.setTimeout(() => {
+                state.pendingMapClickTimer = null
+                if (!state.drawEnabled || state.closed) {
+                    return
+                }
+
+                addPoint({
+                    lng: event.lnglat.getLng(),
+                    lat: event.lnglat.getLat(),
+                })
+            }, 220)
+        }
+
+        function onMapMouseMove(event) {
+            if (!state.drawEnabled || state.closed || state.points.length === 0) {
+                hidePreviewLine()
+                return
+            }
+
+            const lastPoint = state.points[state.points.length - 1]
+            syncPreviewLine([
+                [lastPoint.lng, lastPoint.lat],
+                [event.lnglat.getLng(), event.lnglat.getLat()],
+            ])
+        }
+
+        function addPoint(point, insertIndex) {
+            if (typeof insertIndex === 'number') {
+                state.points.splice(insertIndex, 0, point)
+            } else {
+                state.points.push(point)
+            }
+
+            renderGeometry()
+            fitViewIfNeeded()
+        }
+
+        function renderGeometry() {
+            clearMarkers()
+            clearSegments()
+
+            state.points.forEach((point, index) => {
+                const marker = new AMap.Marker({
+                    position: [point.lng, point.lat],
+                    draggable: true,
+                    offset: new AMap.Pixel(-12, -12),
+                    content: '<div class="point-chip">' + (index + 1) + '</div>',
+                    zIndex: 60,
+                })
+
+                marker.on('dragging', (event) => {
+                    state.points[index] = {
+                        lng: event.lnglat.getLng(),
+                        lat: event.lnglat.getLat(),
+                    }
+                    redrawSegmentsOnly()
+                })
+
+                marker.on('dragend', (event) => {
+                    state.points[index] = {
+                        lng: event.lnglat.getLng(),
+                        lat: event.lnglat.getLat(),
+                    }
+                    redrawSegmentsOnly()
+                    setStatus('节点位置已更新。', 'success')
+                })
+
+                if (index === 0) {
+                    marker.on('dblclick', () => {
+                        clearPendingMapClick()
+                        state.suppressMapClickUntil = Date.now() + 280
+                        closeShapeIfAllowed()
+                    })
+                }
+
+                state.markers.push(marker)
+            })
+
+            state.map.add(state.markers)
+            redrawSegmentsOnly()
+        }
+
+        function redrawSegmentsOnly() {
+            clearSegments()
+
+            if (state.points.length < 2) {
+                if (!state.drawEnabled || state.closed) {
+                    hidePreviewLine()
+                }
+                return
+            }
+
+            const segmentCount = state.closed ? state.points.length : state.points.length - 1
+            for (let index = 0; index < segmentCount; index += 1) {
+                const current = state.points[index]
+                const nextIndex = index === state.points.length - 1 ? 0 : index + 1
+                const next = state.points[nextIndex]
+                if (!current || !next) {
+                    continue
+                }
+
+                const segment = new AMap.Polyline({
+                    path: [
+                        [current.lng, current.lat],
+                        [next.lng, next.lat],
+                    ],
+                    strokeColor: '#1f7a52',
+                    strokeWeight: 5,
+                    strokeOpacity: 0.92,
+                    lineJoin: 'round',
+                    lineCap: 'round',
+                    zIndex: 30,
+                    bubble: true,
+                })
+
+                segment.on('click', () => {
+                    insertMidpoint(index)
+                })
+
+                state.segmentLines.push(segment)
+            }
+
+            state.map.add(state.segmentLines)
+        }
+
+        function insertMidpoint(segmentIndex) {
+            if (state.points.length < 2) {
+                return
+            }
+
+            const current = state.points[segmentIndex]
+            const nextIndex = segmentIndex === state.points.length - 1 ? 0 : segmentIndex + 1
+            const next = state.points[nextIndex]
+            if (!current || !next) {
+                return
+            }
+
+            const midpoint = {
+                lng: Number(((current.lng + next.lng) / 2).toFixed(10)),
+                lat: Number(((current.lat + next.lat) / 2).toFixed(10)),
+            }
+            const insertIndex = nextIndex === 0 ? state.points.length : nextIndex
+            addPoint(midpoint, insertIndex)
+            setStatus('已在线段中间插入新节点，可继续拖动微调。', 'success')
+        }
+
+        function closeShapeIfAllowed() {
+            if (!state.drawEnabled) {
+                return
+            }
+
+            if (state.points.length <= 3) {
+                setStatus('至少需要 4 个点后，双击起点才能形成闭环轨迹。', 'error')
+                return
+            }
+
+            state.closed = true
+            state.drawEnabled = false
+            hidePreviewLine()
+            redrawSegmentsOnly()
+            setStatus('已形成闭环轨迹。', 'success')
+        }
+
+        function resetDrawing() {
+            clearPendingMapClick()
+            state.suppressMapClickUntil = 0
+            state.drawEnabled = false
+            state.closed = false
+            state.points = []
+            clearMarkers()
+            clearSegments()
+            hidePreviewLine()
+            if (state.mapLoaded) {
+                elements.startDrawButton.disabled = false
+            }
+        }
+
+        function clearPendingMapClick() {
+            if (state.pendingMapClickTimer) {
+                window.clearTimeout(state.pendingMapClickTimer)
+                state.pendingMapClickTimer = null
+            }
+        }
+
+        function clearMarkers() {
+            if (state.markers.length > 0) {
+                state.map.remove(state.markers)
+                state.markers = []
+            }
+        }
+
+        function clearSegments() {
+            if (state.segmentLines.length > 0) {
+                state.map.remove(state.segmentLines)
+                state.segmentLines = []
+            }
+        }
+
+        function syncPreviewLine(path) {
+            if (state.previewLine) {
+                if (!path || path.length === 0) {
+                    hidePreviewLine()
+                    return
+                }
+                state.previewLine.setPath(path)
+                state.previewLine.show()
+            }
+        }
+
+        function hidePreviewLine() {
+            if (state.previewLine) {
+                state.previewLine.hide()
+            }
+        }
+
+        function fitViewIfNeeded() {
+            if (state.points.length > 0) {
+                state.map.setFitView([...state.markers, ...state.segmentLines], false, [90, 60, 60, 60], 16)
+            }
+        }
+
+        function exportCsv() {
+            const formData = {
+                roadName: elements.roadName.value.trim(),
+                roadCode: elements.roadCode.value.trim(),
+                segmentName: elements.segmentName.value.trim(),
+                segmentCode: elements.segmentCode.value.trim(),
+            }
+
+            const missingField = Object.entries(formData).find(([, value]) => !value)
+            if (missingField) {
+                setStatus('导出前请完整填写道路名称、道路编号、路段名称、路段编号。', 'error')
+                return
+            }
+
+            if (state.points.length === 0) {
+                setStatus('请先在地图上绘制线路后再导出。', 'error')
+                return
+            }
+
+            if (!window.TransformUtils || typeof window.TransformUtils.transformFromGCJToWGS !== 'function') {
+                setStatus('未检测到坐标转换方法，无法导出。', 'error')
+                return
+            }
+
+            const exportPoints = state.closed ? [...state.points, state.points[0]] : [...state.points]
+            const coordinateValue = exportPoints.map((point) => {
+                const transformed = window.TransformUtils.transformFromGCJToWGS(point.lat, point.lng)
+                return transformed.latitude.toFixed(8) + ',' + transformed.longitude.toFixed(8)
+            }).join(';')
+
+            const row = [
+                escapeCsvValue(formData.roadName),
+                escapeCsvValue(formData.roadCode),
+                escapeCsvValue(formData.segmentName),
+                escapeCsvValue(formData.segmentCode),
+                escapeCsvValue(coordinateValue),
+            ].join(',')
+
+            const csvContent = ['道路名称,道路编号,路段名称,路段编号,坐标点', row].join('\r\n')
+            const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' })
+            const link = document.createElement('a')
+            const roadName = sanitizeFileName(formData.roadName)
+            const segmentName = sanitizeFileName(formData.segmentName)
+            link.href = URL.createObjectURL(blob)
+            link.download = roadName + '_' + segmentName + '_路径坐标.csv'
+            document.body.appendChild(link)
+            link.click()
+            document.body.removeChild(link)
+            URL.revokeObjectURL(link.href)
+            setStatus('CSV 导出成功，坐标已转换为 WGS84。', 'success')
+        }
+
+        function escapeCsvValue(value) {
+            return '"' + String(value).replace(/"/g, '""') + '"'
+        }
+
+        function sanitizeFileName(value) {
+            return String(value).replace(/[\\/:*?"<>|]+/g, '_')
+        }
+
+        function setStatus(message, type) {
+            elements.status.textContent = message
+            elements.status.className = 'status' + (type ? ' ' + type : '')
+        }
+    </script>
+    <script>
+        /**
+ *  判断经纬度是否超出中国境内
+ */
+        (function (globalScope) {
+            function isLocationOutOfChina(latitude, longitude) {
+                if (longitude < 72.004 || longitude > 137.8347 || latitude < 0.8293 || latitude > 55.8271) return true
+                return false
+            }
+
+            /**
+             *  将WGS-84(国际标准)转为GCJ-02(火星坐标):
+             */
+            function transformFromWGSToGCJ(latitude, longitude) {
+                let lat = ''
+                let lon = ''
+                let ee = 0.00669342162296594323
+                let a = 6378245.0
+                let pi = 3.14159265358979324
+
+                if (isLocationOutOfChina(latitude, longitude)) {
+                    lat = latitude
+                    lon = longitude
+                } else {
+                    let adjustLat = transformLatWithXY(longitude - 105.0, latitude - 35.0)
+                    let adjustLon = transformLonWithXY(longitude - 105.0, latitude - 35.0)
+                    let radLat = (latitude / 180.0) * pi
+                    let magic = Math.sin(radLat)
+                    magic = 1 - ee * magic * magic
+                    let sqrtMagic = Math.sqrt(magic)
+                    adjustLat = (adjustLat * 180.0) / (((a * (1 - ee)) / (magic * sqrtMagic)) * pi)
+                    adjustLon = (adjustLon * 180.0) / ((a / sqrtMagic) * Math.cos(radLat) * pi)
+                    latitude = latitude + adjustLat
+                    longitude = longitude + adjustLon
+                }
+                return { latitude: latitude, longitude: longitude }
+            }
+
+            /**
+             *  将GCJ-02(火星坐标)转为百度坐标:
+             */
+            function transformFromGCJToBaidu(latitude, longitude) {
+                let pi = (3.14159265358979324 * 3000.0) / 180.0
+
+                let z = Math.sqrt(longitude * longitude + latitude * latitude) + 0.00002 * Math.sin(latitude * pi)
+                let theta = Math.atan2(latitude, longitude) + 0.000003 * Math.cos(longitude * pi)
+                let a_latitude = z * Math.sin(theta) + 0.006
+                let a_longitude = z * Math.cos(theta) + 0.0065
+
+                return { latitude: a_latitude, longitude: a_longitude }
+            }
+
+            /**
+             *  将百度坐标转为GCJ-02(火星坐标):
+             */
+            function transformFromBaiduToGCJ(latitude, longitude) {
+                let xPi = (3.14159265358979323846264338327950288 * 3000.0) / 180.0
+
+                let x = longitude - 0.0065
+                let y = latitude - 0.006
+                let z = Math.sqrt(x * x + y * y) - 0.00002 * Math.sin(y * xPi)
+                let theta = Math.atan2(y, x) - 0.000003 * Math.cos(x * xPi)
+                let a_latitude = z * Math.sin(theta)
+                let a_longitude = z * Math.cos(theta)
+
+                return { latitude: a_latitude, longitude: a_longitude }
+            }
+
+            /**
+             *  将GCJ-02(火星坐标)转为WGS-84:
+             */
+            function transformFromGCJToWGS(latitude, longitude) {
+                let threshold = 0.00001
+
+                // The boundary
+                let minLat = latitude - 0.5
+                let maxLat = latitude + 0.5
+                let minLng = longitude - 0.5
+                let maxLng = longitude + 0.5
+
+                let delta = 1
+                let maxIteration = 30
+
+                while (true) {
+                    let leftBottom = transformFromWGSToGCJ(minLat, minLng)
+                    let rightBottom = transformFromWGSToGCJ(minLat, maxLng)
+                    let leftUp = transformFromWGSToGCJ(maxLat, minLng)
+                    let midPoint = transformFromWGSToGCJ((minLat + maxLat) / 2, (minLng + maxLng) / 2)
+                    delta = Math.abs(midPoint.latitude - latitude) + Math.abs(midPoint.longitude - longitude)
+
+                    if (maxIteration-- <= 0 || delta <= threshold) {
+                        return { latitude: (minLat + maxLat) / 2, longitude: (minLng + maxLng) / 2 }
+                    }
+
+                    if (isContains({ latitude: latitude, longitude: longitude }, leftBottom, midPoint)) {
+                        maxLat = (minLat + maxLat) / 2
+                        maxLng = (minLng + maxLng) / 2
+                    } else if (isContains({ latitude: latitude, longitude: longitude }, rightBottom, midPoint)) {
+                        maxLat = (minLat + maxLat) / 2
+                        minLng = (minLng + maxLng) / 2
+                    } else if (isContains({ latitude: latitude, longitude: longitude }, leftUp, midPoint)) {
+                        minLat = (minLat + maxLat) / 2
+                        maxLng = (minLng + maxLng) / 2
+                    } else {
+                        minLat = (minLat + maxLat) / 2
+                        minLng = (minLng + maxLng) / 2
+                    }
+                }
+            }
+
+            function isContains(point, p1, p2) {
+                return (
+                    point.latitude >= Math.min(p1.latitude, p2.latitude) &&
+                    point.latitude <= Math.max(p1.latitude, p2.latitude) &&
+                    point.longitude >= Math.min(p1.longitude, p2.longitude) &&
+                    point.longitude <= Math.max(p1.longitude, p2.longitude)
+                )
+            }
+
+            function transformLatWithXY(x, y) {
+                let pi = 3.14159265358979324
+                let lat = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x))
+                lat += ((20.0 * Math.sin(6.0 * x * pi) + 20.0 * Math.sin(2.0 * x * pi)) * 2.0) / 3.0
+                lat += ((20.0 * Math.sin(y * pi) + 40.0 * Math.sin((y / 3.0) * pi)) * 2.0) / 3.0
+                lat += ((160.0 * Math.sin((y / 12.0) * pi) + 320 * Math.sin((y * pi) / 30.0)) * 2.0) / 3.0
+                return lat
+            }
+
+            function transformLonWithXY(x, y) {
+                let pi = 3.14159265358979324
+                let lon = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x))
+                lon += ((20.0 * Math.sin(6.0 * x * pi) + 20.0 * Math.sin(2.0 * x * pi)) * 2.0) / 3.0
+                lon += ((20.0 * Math.sin(x * pi) + 40.0 * Math.sin((x / 3.0) * pi)) * 2.0) / 3.0
+                lon += ((150.0 * Math.sin((x / 12.0) * pi) + 300.0 * Math.sin((x / 30.0) * pi)) * 2.0) / 3.0
+                return lon
+            }
+
+            const transformUtils = {
+                isLocationOutOfChina: isLocationOutOfChina,
+                transformFromWGSToGCJ: transformFromWGSToGCJ,
+                transformFromGCJToBaidu: transformFromGCJToBaidu,
+                transformFromBaiduToGCJ: transformFromBaiduToGCJ,
+                transformFromGCJToWGS: transformFromGCJToWGS,
+            }
+
+            if (typeof module !== 'undefined' && module.exports) {
+                module.exports = transformUtils
+            }
+
+            if (globalScope) {
+                globalScope.TransformUtils = transformUtils
+            }
+        })(typeof window !== 'undefined' ? window : typeof globalThis !== 'undefined' ? globalThis : this)
+    </script>
+</body>
+
+</html>
