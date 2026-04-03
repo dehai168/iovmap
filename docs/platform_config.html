@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CeMos部署服务器资源评估</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .content {
+            display: flex;
+            gap: 20px;
+            padding: 40px;
+        }
+
+        .form-section {
+            flex: 1;
+            min-width: 400px;
+        }
+
+        .result-section {
+            flex: 1;
+            min-width: 400px;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            height: 880px;
+            overflow-y: auto;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .option-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        .option-btn {
+            flex: 1;
+            min-width: 80px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.3s;
+        }
+
+        .option-btn:hover {
+            border-color: #667eea;
+        }
+
+        .option-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .custom-input {
+            display: none;
+            margin-top: 10px;
+        }
+
+        .custom-input.show {
+            display: block;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .result-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .result-item {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: white;
+            border-left: 4px solid #667eea;
+            border-radius: 4px;
+        }
+
+        .result-item-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .result-item-content {
+            color: #666;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .result-item-value {
+            color: #667eea;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .no-result {
+            color: #999;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .summary-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .summary-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .summary-label {
+            opacity: 0.9;
+        }
+
+        .summary-value {
+            font-weight: 600;
+        }
+
+        .warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 12px;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #856404;
+            margin-top: 15px;
+        }
+
+        @media (max-width: 1024px) {
+            .content {
+                flex-direction: column;
+            }
+
+            .result-section {
+                height: auto;
+            }
+        }
+
+        .spec-table {
+            width: 100%;
+            font-size: 12px;
+            margin: 10px 0;
+            border-collapse: collapse;
+        }
+
+        .spec-table td {
+            padding: 6px;
+            border: 1px solid #ddd;
+        }
+
+        .spec-table td:first-child {
+            font-weight: 600;
+            background: #f5f5f5;
+            width: 40%;
+        }
+
+        .spec-table td:last-child {
+            color: #667eea;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🖥️ CeMos部署服务器资源评估</h1>
+            <p>基于项目需求自动计算所需的服务器配置参数</p>
+        </div>
+
+        <div class="content">
+            <div class="form-section">
+                <h2 style="margin-bottom: 20px; color: #333;">项目信息</h2>
+
+                <!-- 问题1: 接入设备数 -->
+                <div class="form-group">
+                    <label>1. 接入设备数</label>
+                    <div class="option-group">
+                        <button class="option-btn" onclick="selectOption(this, 'devices', 10)">10</button>
+                        <button class="option-btn" onclick="selectOption(this, 'devices', 100)">100</button>
+                        <button class="option-btn" onclick="selectOption(this, 'devices', 1000)">1000</button>
+                        <button class="option-btn" onclick="selectOption(this, 'devices', 10000)">10000</button>
+                        <button class="option-btn" onclick="selectOption(this, 'devices', 'custom')">自定义</button>
+                    </div>
+                    <div class="custom-input">
+                        <input type="number" id="devicesCustom" placeholder="请输入设备数" onchange="updateResult()">
+                    </div>
+                </div>
+
+                <!-- 问题2: 摄像头数 -->
+                <div class="form-group">
+                    <label>2. 单台设备摄像头数</label>
+                    <div class="option-group">
+                        <button class="option-btn" onclick="selectOption(this, 'cameras', 4)">4</button>
+                        <button class="option-btn" onclick="selectOption(this, 'cameras', 8)">8</button>
+                        <button class="option-btn" onclick="selectOption(this, 'cameras', 16)">16</button>
+                    </div>
+                </div>
+
+                <!-- 问题3: 分辨率 -->
+                <div class="form-group">
+                    <label>3. 摄像头分辨率</label>
+                    <div class="option-group">
+                        <button class="option-btn" onclick="selectOption(this, 'resolution', 'd1')">D1(704*576)</button>
+                        <button class="option-btn" onclick="selectOption(this, 'resolution', '720p')">720P</button>
+                        <button class="option-btn" onclick="selectOption(this, 'resolution', '1080p')">1080P</button>
+                        <button class="option-btn" onclick="selectOption(this, 'resolution', '4mp')">4MP</button>
+                    </div>
+                </div>
+
+                <!-- 问题4: 工作时长 -->
+                <div class="form-group">
+                    <label>4. 设备工作时长(小时/天)</label>
+                    <div class="option-group">
+                        <button class="option-btn" onclick="selectOption(this, 'workHours', 4)">4</button>
+                        <button class="option-btn" onclick="selectOption(this, 'workHours', 6)">6</button>
+                        <button class="option-btn" onclick="selectOption(this, 'workHours', 8)">8</button>
+                        <button class="option-btn" onclick="selectOption(this, 'workHours', 12)">12</button>
+                        <button class="option-btn" onclick="selectOption(this, 'workHours', 24)">24</button>
+                    </div>
+                </div>
+
+                <!-- 问题5: 在线率 -->
+                <div class="form-group">
+                    <label>5. 所有设备同时在线率</label>
+                    <div class="option-group">
+                        <button class="option-btn" onclick="selectOption(this, 'onlineRate', 0.2)">20%</button>
+                        <button class="option-btn" onclick="selectOption(this, 'onlineRate', 0.4)">40%</button>
+                        <button class="option-btn" onclick="selectOption(this, 'onlineRate', 0.6)">60%</button>
+                        <button class="option-btn" onclick="selectOption(this, 'onlineRate', 0.8)">80%</button>
+                        <button class="option-btn" onclick="selectOption(this, 'onlineRate', 1.0)">100%</button>
+                    </div>
+                </div>
+
+                <!-- 问题6: 编码格式 -->
+                <div class="form-group">
+                    <label>6. 录像编码格式</label>
+                    <div class="option-group">
+                        <button class="option-btn" onclick="selectOption(this, 'codec', 'h264')">H264</button>
+                        <button class="option-btn" onclick="selectOption(this, 'codec', 'h265')">H265</button>
+                    </div>
+                </div>
+
+                <!-- 问题7: 同时查看视频通道数 -->
+                <div class="form-group">
+                    <label>7. 同时查看视频通道数</label>
+                    <input type="number" id="viewChannels" value="10" onchange="updateResult()" placeholder="请输入通道数">
+                </div>
+
+                <!-- 问题8: 数据保留时间 -->
+                <div class="form-group">
+                    <label>8. 服务器数据保留时间(天)</label>
+                    <div class="option-group">
+                        <button class="option-btn" onclick="selectOption(this, 'retention', 30)">30</button>
+                        <button class="option-btn" onclick="selectOption(this, 'retention', 60)">60</button>
+                        <button class="option-btn" onclick="selectOption(this, 'retention', 183)">183</button>
+                        <button class="option-btn" onclick="selectOption(this, 'retention', 365)">365</button>
+                        <button class="option-btn" onclick="selectOption(this, 'retention', 'custom')">自定义</button>
+                    </div>
+                    <div class="custom-input">
+                        <input type="number" id="retentionCustom" placeholder="请输入天数" onchange="updateResult()">
+                    </div>
+                </div>
+
+                <!-- 问题9: 中心存储 -->
+                <div class="form-group">
+                    <label>9. 是否做中心存储</label>
+                    <div class="option-group">
+                        <button class="option-btn" onclick="selectOption(this, 'centerStorage', true)">是</button>
+                        <button class="option-btn" onclick="selectOption(this, 'centerStorage', false)">否</button>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="updateResult()">📊 计算配置</button>
+                    <button class="btn btn-secondary" onclick="resetForm()">↻ 重置</button>
+                </div>
+            </div>
+
+            <div class="result-section">
+                <div class="result-title">📋 服务器配置清单</div>
+                <div id="resultContainer">
+                    <div class="no-result">请先填写项目信息，然后点击"计算配置"按钮</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 性能参数表
+        const performanceData = {
+            single: [
+                { cpu: 8, memory: 16, devices: 2500, videoStreams: 50, downloads: 21000, storageType: '本机 SATA 3', gps: 9000000, alarms: 21000 },
+                { cpu: 16, memory: 32, devices: 7500, videoStreams: 150, downloads: 75000, storageType: '本机 SSD', gps: 27000000, alarms: 75000 },
+                { cpu: 24, memory: 48, devices: 12500, videoStreams: 250, downloads: 125000, storageType: 'Minio 对象存储', gps: 45000000, alarms: 125000 }
+            ],
+            cluster: [
+                { count: 8, cpu: 8, memory: 16, devices: 25000, videoStreams: 500, downloads: 250000, storageType: 'Minio/云存储', gps: 90000000, alarms: 250000 },
+                { count: 18, cpu: 16, memory: 32, devices: 125000, videoStreams: 2500, downloads: 1250000, storageType: 'Minio/云存储', gps: 450000000, alarms: 1250000 },
+                { count: 22, cpu: 24, memory: 48, devices: 250000, videoStreams: 5000, downloads: 2500000, storageType: 'Minio/云存储', gps: 900000000, alarms: 2500000 }
+            ]
+        };
+
+        // 分辨率和码率对照表
+        const bitrateData = {
+            'd1': { h264: 2048, h265: 1434 },
+            '720p': { h264: 6144, h265: 4301 },
+            '1080p': { h264: 8192, h265: 5734 },
+            '4mp': { h264: 15360, h265: 10752 }
+        };
+
+        // 分辨率像素，用于换算 D1 等效通道，评估接码能力
+        const resolutionPixels = {
+            'd1': 704 * 576,
+            '720p': 1280 * 720,
+            '1080p': 1920 * 1080,
+            '4mp': 2592 * 1520
+        };
+
+        // 表单数据
+        let formData = {
+            devices: 1000,
+            cameras: 4,
+            resolution: '720p',
+            workHours: 4,
+            onlineRate: 1.0,
+            codec: 'h264',
+            viewChannels: 10,
+            retention: 30,
+            centerStorage: false
+        };
+
+        function selectOption(btn, field, value) {
+            // 移除同组其他按钮的active样式
+            const siblings = btn.parentElement.querySelectorAll('.option-btn');
+            siblings.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            // 处理自定义输入
+            const customInput = btn.parentElement.parentElement.querySelector('.custom-input');
+            if (value === 'custom') {
+                if (customInput) {
+                    customInput.classList.add('show');
+                }
+                const inputId = field + 'Custom';
+                formData[field] = document.getElementById(inputId)?.value || '';
+            } else {
+                if (customInput) {
+                    customInput.classList.remove('show');
+                }
+                formData[field] = value;
+            }
+
+            updateResult();
+        }
+
+        function updateResult() {
+            // 依据当前按钮状态读取自定义值，避免首次选择后丢失 custom 状态
+            const isDevicesCustom = !!document.querySelector("button.option-btn.active[onclick*='\"devices\"'][onclick*='\"custom\"']")
+                || !!document.querySelector("button.option-btn.active[onclick*=\"'devices'\"][onclick*=\"'custom'\"]");
+            const isRetentionCustom = !!document.querySelector("button.option-btn.active[onclick*='\"retention\"'][onclick*='\"custom\"']")
+                || !!document.querySelector("button.option-btn.active[onclick*=\"'retention'\"][onclick*=\"'custom'\"]");
+
+            if (isDevicesCustom) {
+                formData.devices = parseInt(document.getElementById('devicesCustom').value) || 1000;
+            }
+            if (isRetentionCustom) {
+                formData.retention = parseInt(document.getElementById('retentionCustom').value) || 30;
+            }
+
+            formData.viewChannels = parseInt(document.getElementById('viewChannels').value) || 10;
+
+            calculate();
+        }
+
+        function calculate() {
+            const { devices, cameras, resolution, workHours, onlineRate, codec, viewChannels, retention, centerStorage } = formData;
+            const workHoursRatio = workHours / 24;
+
+            // 计算实际在线设备数（并发）
+            const onlineDevices = Math.ceil(devices * onlineRate);
+
+            // 获取码率
+            const bitrate = bitrateData[resolution][codec];
+            const bitrateKbps = bitrate; // Kbps单位
+            const bitrateMbps = bitrate / 1024; // Mbps单位
+            const d1Pixels = resolutionPixels.d1;
+            const selectedResolutionPixels = resolutionPixels[resolution];
+
+            // 计算每台设备的数据量
+            // 1. 录像数据量 (按实际工作时长计算)
+            const recordingDataPerDevice = (cameras * bitrateKbps * workHours * 3600) / (8 * 1024 * 1024); // GB/天
+            const totalRecordingData = recordingDataPerDevice * devices * retention; // GB，中心存储按所有设备所有通道
+
+            // 2. GPS数据量 (30s一条，1小时120条，每条1KB)
+            const gpsDataPerHour = 120; // 条/小时
+            const gpsDataPerDevicePerDay = (gpsDataPerHour * workHours * 1) / (1024 * 1024); // GB/天
+            const totalGpsData = gpsDataPerDevicePerDay * onlineDevices * retention; // GB
+
+            // 3. 报警录像数据 (按 24 小时场景的 10 条/天，随工作时长等比折算)
+            const alarmPerDay = 10 * workHoursRatio;
+            const alarmDurationSeconds = 20;
+            const alarmDataPerDevicePerDay = (alarmPerDay * bitrateKbps * alarmDurationSeconds) / (8 * 1024 * 1024); // GB/天
+            const totalAlarmData = alarmDataPerDevicePerDay * onlineDevices * retention; // GB
+
+            // 总存储需求
+            const totalStorageGB = centerStorage
+                ? (totalRecordingData + totalGpsData + totalAlarmData)
+                : (totalGpsData + totalAlarmData);
+            const totalStorageTB = totalStorageGB / 1024;
+
+            // 带宽计算
+            // 按规则：带宽(Mbps)=码率(Mbps)/0.8*总并发通道数（用户同时查看通道数）
+            const concurrentChannelBandwidth = (bitrateMbps / 0.8) * viewChannels;
+            const simEvidenceDailyTrafficPerDeviceGB = gpsDataPerDevicePerDay + alarmDataPerDevicePerDay;
+            const simEvidenceUploadBandwidthPerDeviceMbps = (simEvidenceDailyTrafficPerDeviceGB * 8 * 1024) / (24 * 3600);
+            const totalEvidenceUploadBandwidthMbps = simEvidenceUploadBandwidthPerDeviceMbps * onlineDevices;
+            const simDailyTrafficPerDeviceGB = centerStorage
+                ? (recordingDataPerDevice + simEvidenceDailyTrafficPerDeviceGB)
+                : simEvidenceDailyTrafficPerDeviceGB;
+            const simMonthlyTrafficPerDeviceGB = simDailyTrafficPerDeviceGB * 30;
+            const totalSimMonthlyTrafficGB = centerStorage
+                ? ((recordingDataPerDevice * devices) + (simEvidenceDailyTrafficPerDeviceGB * onlineDevices)) * 30
+                : simMonthlyTrafficPerDeviceGB * onlineDevices;
+
+            // 上行带宽口径：关闭中心存储时包含预览 + GPS/报警证据；开启中心存储时额外叠加标准录像上传
+            const centerStorageRecordingUploadBandwidth = (bitrateMbps / 0.8) * (devices * cameras);
+            const baseUploadBandwidth = concurrentChannelBandwidth + totalEvidenceUploadBandwidthMbps;
+            const uploadBandwidth = centerStorage
+                ? (baseUploadBandwidth + centerStorageRecordingUploadBandwidth)
+                : baseUploadBandwidth;
+
+            // 下行带宽按并发查看通道估算
+            const downloadBandwidth = concurrentChannelBandwidth;
+
+            // 接码能力校验：按 D1 等效通道分析
+            const d1EquivalentChannels = Math.ceil(viewChannels * (selectedResolutionPixels / d1Pixels));
+
+            // 选型：当接入能力不足或解码能力不足时，自动递增到下一档
+            const configTiers = [
+                ...performanceData.single.map(item => ({ ...item, deploymentType: '单机部署' })),
+                ...performanceData.cluster.map(item => ({ ...item, deploymentType: '分布式集群方案' }))
+            ];
+
+            let selectedConfig = configTiers[configTiers.length - 1];
+            for (const tier of configTiers) {
+                const accessEnough = onlineDevices <= tier.devices;
+                const decodeEnoughInTier = d1EquivalentChannels <= tier.videoStreams;
+                if (accessEnough && decodeEnoughInTier) {
+                    selectedConfig = tier;
+                    break;
+                }
+            }
+
+            const deploymentType = selectedConfig.deploymentType;
+            const accessEnoughFinal = onlineDevices <= selectedConfig.devices;
+            const decodeCapacity = selectedConfig.videoStreams;
+            const decodeEnough = d1EquivalentChannels <= decodeCapacity;
+
+            // 计算磁盘容量（包含冗余）
+            const diskCapacityGB = totalStorageGB;
+            const diskCapacityTB = totalStorageTB;
+
+            // 渲染结果
+            let html = `
+                <div class="summary-box">
+                    <div class="summary-item">
+                        <span class="summary-label">📊 部署方案：</span>
+                        <span class="summary-value">${deploymentType}</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">📱 实际在线设备数：</span>
+                        <span class="summary-value">${onlineDevices.toLocaleString()} 台</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">🗄️ 中心存储：</span>
+                        <span class="summary-value">${centerStorage ? '是' : '否'}</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">💾 总存储需求：</span>
+                        <span class="summary-value">${diskCapacityTB.toFixed(2)} TB</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">🌐 估计带宽：</span>
+                        <span class="summary-value">上行: ${uploadBandwidth.toFixed(2)} Mbps / 下行: ${downloadBandwidth.toFixed(2)} Mbps</span>
+                    </div>
+                </div>
+
+                <div class="result-item">
+                    <div class="result-item-title">✅ 服务器规格配置</div>
+                    <div class="result-item-content">
+                        <table class="spec-table">
+                            <tr>
+                                <td>CPU核心数</td>
+                                <td>${deploymentType === '单机部署' ? selectedConfig.cpu : '(单机配置)'} 核</td>
+                            </tr>
+                            <tr>
+                                <td>内存容量</td>
+                                <td>${deploymentType === '单机部署' ? selectedConfig.memory : '(按配置)'} GB</td>
+                            </tr>
+                            <tr>
+                                <td>磁盘容量</td>
+                                <td>${diskCapacityTB.toFixed(2)} TB</td>
+                            </tr>
+                            ${deploymentType === '分布式集群方案' ? `
+                            <tr>
+                                <td>服务器台数</td>
+                                <td>${selectedConfig.count} 台</td>
+                            </tr>
+                            <tr>
+                                <td>单机配置</td>
+                                <td>${selectedConfig.cpu}C / ${selectedConfig.memory}G</td>
+                            </tr>
+                            ` : ''}
+                            <tr>
+                                <td>存储方案</td>
+                                <td>${selectedConfig.storageType}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="result-item">
+                    <div class="result-item-title">🔗 网络带宽配置</div>
+                    <div class="result-item-content">
+                        <div>
+                            <strong>上行带宽：</strong> <span class="result-item-value">${uploadBandwidth.toFixed(2)} Mbps</span>
+                            <div style="font-size: 12px; color: #999; margin-top: 4px;">（${centerStorage ? '中心存储开启：预览流量 + 在线设备 GPS/报警证据上传 + 全部设备标准录像上传' : '中心存储关闭：预览流量 + 在线设备 GPS/报警证据上传'}）</div>
+                        </div>
+                        <div style="margin-top: 12px;">
+                            <strong>下行带宽：</strong> <span class="result-item-value">${downloadBandwidth.toFixed(2)} Mbps</span>
+                            <div style="font-size: 12px; color: #999; margin-top: 4px;">（按同时查看视频通道数并发峰值计算）</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="result-item">
+                    <div class="result-item-title">🎥 服务器接码能力校验</div>
+                    <div class="result-item-content">
+                        <table class="spec-table">
+                            <tr>
+                                <td>当前分辨率</td>
+                                <td>${resolution.toUpperCase()}</td>
+                            </tr>
+                            <tr>
+                                <td>并发通道数</td>
+                                <td>${viewChannels} 路</td>
+                            </tr>
+                            <tr>
+                                <td>D1等效通道需求</td>
+                                <td>${d1EquivalentChannels} 路</td>
+                            </tr>
+                            <tr>
+                                <td>当前方案视频能力</td>
+                                <td>${decodeCapacity} 路</td>
+                            </tr>
+                            <tr style="background: ${decodeEnough ? '#eaf7ea' : '#fff1f0'}; font-weight: 600;">
+                                <td>接码能力结论</td>
+                                <td>${decodeEnough ? '满足' : '不足'}</td>
+                            </tr>
+                            <tr style="background: ${accessEnoughFinal ? '#eaf7ea' : '#fff1f0'}; font-weight: 600;">
+                                <td>接入能力结论</td>
+                                <td>${accessEnoughFinal ? '满足' : '不足'}</td>
+                            </tr>
+                        </table>
+                        ${(decodeEnough && accessEnoughFinal) ? '' : `<div style="margin-top: 10px; font-size: 12px; color: #a94442;">已自动升档到当前可选最高配置；如仍不足，建议继续横向扩容节点。</div>`}
+                    </div>
+                </div>
+
+                <div class="result-item">
+                    <div class="result-item-title">📱 SIM卡流量</div>
+                    <div class="result-item-content">
+                        <div>
+                            <strong>单设备单张 SIM 月流量：</strong> <span class="result-item-value">${simMonthlyTrafficPerDeviceGB.toFixed(2)} GB</span>
+                            <div style="font-size: 12px; color: #999; margin-top: 4px;">（SIM 卡跟设备走，${centerStorage ? '中心存储开启时按单设备录像 + GPS + 报警证据估算' : '中心存储关闭时按单设备 GPS + 报警证据估算'}）</div>
+                        </div>
+                        <div style="margin-top: 12px;">
+                            <strong>SIM 月流量总计：</strong> <span class="result-item-value">${totalSimMonthlyTrafficGB.toFixed(2)} GB</span>
+                            <div style="font-size: 12px; color: #999; margin-top: 4px;">（${centerStorage ? `录像按 ${devices.toLocaleString()} 台设备汇总，GPS/报警按 ${onlineDevices.toLocaleString()} 台在线设备汇总` : `按 ${onlineDevices.toLocaleString()} 台在线设备汇总`}）</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="result-item">
+                    <div class="result-item-title">💾 存储详情</div>
+                    <div class="result-item-content">
+                        <table class="spec-table">
+                            <tr>
+                                <td>录像存储总量</td>
+                                <td>${centerStorage ? totalRecordingData.toFixed(2) : '0.00'} GB</td>
+                            </tr>
+                            <tr>
+                                <td>GPS数据总量</td>
+                                <td>${totalGpsData.toFixed(2)} GB</td>
+                            </tr>
+                            <tr>
+                                <td>报警录像总量</td>
+                                <td>${totalAlarmData.toFixed(2)} GB</td>
+                            </tr>
+                            <tr style="background: #e8f4f8; font-weight: 600;">
+                                <td>总存储容量</td>
+                                <td>${diskCapacityTB.toFixed(2)} TB</td>
+                            </tr>
+                        </table>
+                        <div style="margin-top: 10px; font-size: 12px; color: #666;">
+                            <strong>数据保留周期：</strong> ${retention} 天
+                        </div>
+                        <div style="margin-top: 6px; font-size: 12px; color: #666;">
+                            <strong>存储策略：</strong> ${centerStorage ? '包含所有设备所有通道录像 + GPS + 报警' : '仅包含 GPS + 报警'}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="result-item">
+                    <div class="result-item-title">📈 计算参数</div>
+                    <div class="result-item-content">
+                        <table class="spec-table">
+                            <tr>
+                                <td>接入设备总数</td>
+                                <td>${devices.toLocaleString()} 台</td>
+                            </tr>
+                            <tr>
+                                <td>设备在线率</td>
+                                <td>${(onlineRate * 100).toFixed(0)}%</td>
+                            </tr>
+                            <tr>
+                                <td>实际在线设备数</td>
+                                <td>${onlineDevices.toLocaleString()} 台</td>
+                            </tr>
+                            <tr>
+                                <td>并发查看通道数</td>
+                                <td>${viewChannels} 路</td>
+                            </tr>
+                            <tr>
+                                <td>摄像头总数</td>
+                                <td>${(cameras * onlineDevices).toLocaleString()} 路</td>
+                            </tr>
+                            <tr>
+                                <td>D1等效换算系数</td>
+                                <td>${(selectedResolutionPixels / d1Pixels).toFixed(2)}x</td>
+                            </tr>
+                            <tr>
+                                <td>视频码率</td>
+                                <td>${bitrate} Kbps</td>
+                            </tr>
+                            <tr>
+                                <td>日工作时长</td>
+                                <td>${workHours} 小时</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="warning">
+                    <strong>⚠️ 说明：</strong> 本计算结果基于标准场景估算，实际配置需根据网络环境、业务模式等因素进行调整。建议与技术团队沟通后确认最终方案。
+                </div>
+            `;
+
+            document.getElementById('resultContainer').innerHTML = html;
+        }
+
+        function resetForm() {
+            // 移除所有active样式
+            document.querySelectorAll('.option-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelectorAll('.custom-input').forEach(input => {
+                input.classList.remove('show');
+            });
+
+            // 重置表单数据
+            formData = {
+                devices: 1000,
+                cameras: 4,
+                resolution: '720p',
+                workHours: 4,
+                onlineRate: 1.0,
+                codec: 'h264',
+                viewChannels: 10,
+                retention: 30,
+                centerStorage: false
+            };
+
+            // 重置输入框
+            document.getElementById('viewChannels').value = 10;
+
+            // 清空结果
+            document.getElementById('resultContainer').innerHTML = '<div class="no-result">请先填写项目信息，然后点击"计算配置"按钮</div>';
+
+            // 选中默认值
+            setDefaultSelections();
+        }
+
+        function setDefaultSelections() {
+            // 按字段单独选中默认值，避免不同题目中相同文本造成误选
+            const setDefaultByField = (field, text) => {
+                const buttons = document.querySelectorAll(`button.option-btn[onclick*="'${field}'"]`);
+                buttons.forEach(btn => {
+                    if (btn.textContent.trim() === text) {
+                        btn.classList.add('active');
+                    }
+                });
+            };
+
+            setDefaultByField('devices', '1000');
+            setDefaultByField('cameras', '4');
+            setDefaultByField('resolution', '720P');
+            setDefaultByField('workHours', '4');
+            setDefaultByField('onlineRate', '100%');
+            setDefaultByField('codec', 'H264');
+            setDefaultByField('retention', '30');
+            setDefaultByField('centerStorage', '否');
+        }
+
+        // 页面加载时设置默认选项
+        window.addEventListener('load', setDefaultSelections);
+    </script>
+</body>
+</html>
